@@ -304,3 +304,107 @@
 - 툴을 이용한 백업
   - EnterpriseBackup(유료)
   - XtraBackup(무료)
+
+## 파티셔닝
+
+##### 파티셔닝
+- 인덱스를 사용해도 느려지는 경우에 대응하는 방식
+- `한 시스템 안에서 테이블을 좀 더 작은 단위로 분할`해서 관리하는 방법
+- 배경
+  - B-트리 인덱스의 경우에 데이터가 많아지면 트리의 `Depth(깊이)가 길어지고 길이가 길어지면 비교회수가 늘어나면서 검색속도가 느려지는 현상 발생`
+  - 해시 인덱스는 데이터가 많아지면 `충돌 현상` 발생
+- 워킹 셋: 실제 자주 액세스하는 데이터만 보자는 아이디어
+- 필요한 파티션만 선별해서 검색, 업데이트해서 속도 개선하는데, 파티션 수를 늘린다고 `계속 향상되지는 않음`
+- 파티셔닝의 종류
+  - 레인지(Range) 파티션
+    - `연속적인 값`을 사용해서 분할
+    - 파티션 별로 크기가 다름
+    - 파티션 분할/병합이 비교적 쉬움
+  - 리스트(List) 파티션
+    - `이산적인 값`을 사용해서 분할
+    - 파티션 별로 크기가 다름
+    - 파티션 분할/병합이 비교적 쉬움
+  - 해시(Hash) 파티션
+    - `해시`를 사용해서 분할
+    - 파티션 별로 크기가 동일
+    - 파티션 분할/병합이 어려워서 파티션이 추가 삭제될 때 Global Relocation 현상 발생
+  - `키(Key) 파티션`
+    - `PK 컬럼을 파티션 키`로 사용해서 분할
+    - 파티션 별로 크기가 동일
+    - 가장 바람직하고 효율적인 방법
+  - 리니어(Linear) 파티션
+    - 리니어 해시 파티션과 리니어 키 파티션으로 나눠지는 방식
+    - 파티션 별로 크기가 다름
+    - Power of 2 인접 파티션으로 이동만 허용하여 Global Relocation 현상을 완화
+- 제약 조건
+  - `외래키 사용 불가 -> 조인 불가`
+  - 동일한 스토리지 엔진에서만 가능
+  - 파티션의 개수 제한
+
+##### MySQL 파티셔닝
+- 하나의 테이블을 여러 개의 파티션으로 분할하여 검색/업데이트 시 파티션을 대상으로 처리
+- 파티셔닝
+  - `ENGINE=InnoDB PARTITION BY 파티셔닝 방식 COLUMNS(칼럼명)`
+  - CREATE TABLE `employees_new` (
+    `emp_no` int(11) NOT NULL, `birth_date` date NOT NULL, `first_name` varchar(14) NOT NULL, `last_name` varchar(16) NOT NULL, `gender` enum('M','F') NOT NULL, `hire_date` date NULL
+    )ENGINE=InnoDB PARTITION BY RANGE COLUMNS(hire_date) ( 
+    PARTITION p0 VALUES LESS THAN('1990-01-01'),
+    PARTITION p1 VALUES LESS THAN ('2000-01-01'),
+    PARTITION p2 VALUES LESS THAN ('2010-01-01'),
+    PARTITION p3 VALUES LESS THAN MAXVALUE);
+- 파티셔닝된 테이블로 데이터 적재
+  - insert into employees_new select * from employees; 
+- 삽입할 때 데이터 지정 방식
+  - 간접 지정 방식(암묵적 파티션 지정 검색)
+    ```sql
+    select * from employees_new where emp_no=10001; (모든 파티션이 검색되는 나쁜 검색)
+    select * from employees_new where emp_no=10001 AND hire_date<'1990-01-01'; (해당 파티션만 검색)
+    ```
+  - 직접 지정 방식(명시적 파티션 지정 검색)
+    ```sql 
+    select count(*) from employees_new partition(p0); 
+    select count(*) from employees_new partition(p1); 
+    select count(*) from employees_new partition(p2); 
+    select count(*) from employees_new partition(p3); 
+    select count(*) from employees_new partition(p0,p1);
+    ```
+  cf) 쿼리 앞에 `explain partitions`를 하게 되면 쿼리 정보를 출력함
+- 파티션 테이블의 결정 기준(WHERE 절의 조건)
+  - 파티션 O + 인덱스 O: 쿼리에 파티션 관련 정보도 있고, 인덱스 정보도 있음(가장 좋음)
+  - 파티션 O + 인덱스 X: 파티션 관련 정보는 있고, 인덱스 정보는 없음
+  - 파티션 X + 인덱스 O: 파티션 관련 정보는 없고, 인덱스 정보는 있음
+  - 파티션 X + 인덱스 X: 파티션 정보가 없고, 인덱스관련 정보도 없음(가장 나쁨)
+
+## 샤딩
+
+##### 샤딩
+- `여러 시스템 안에서 테이블을 물리적으로 좀 더 작은 단위로 분할`해서 관리하는 방법
+- 파티셔닝과 달리 디비가 직접 지원하는 기능이 아님
+- 샤딩 방법
+  - 수평샤딩(Horizontal sharding)
+    - 동일한 스키마(전화번호부 방법으로 분할 a-m / n-r / s-z)
+  - 수직샤딩(Vertical sharding)
+    - 샤드별로 다른 스키마를 가짐
+- 제약 조건
+  - `외래키 사용 불가 -> 조인 불가`
+##### 복제/파티셔닝/샤딩 비교
+- 복제는 동일한 데이터를 여러 대에 저장하는 반면 샤딩은 작은 단위로 분할해서 저장
+- 파티셔닝은 동일한 시스템 내에서 분할해서 관리하는 반면 샤딩은 여러 시스템에서 분할해서 저장
+- 복제는 `읽기 성능이 향상`되지만 쓰기 성능은 향상되지 않음
+- 샤딩은 데이터를 쪼개 여러 대에 분산 저장하므로 데이터가 꽉찰 경우를 막아주며 여러 서버 리소스를 충분히 쓰기 때문에 `쓰기 성능이 향상`
+- 파티셔닝은 읽기와 쓰기 성능이 모두 향상
+- `샤딩을 먼저 적용하고 개별 샤드를 여러 개 복제를 하면 안정성과 쓰기/읽기 성능을 동시에 높일 수 있음`
+
+|종류|읽기 성능|쓰기 성능|비고|
+|------|-------|------|----|
+|복제|향상|동일|서버를 추가하면 계속 읽기 성능 계속 향상 가능|
+|파티셔닝|향상|향상|서버를 추가하는 방식이 아니므로 제한적|
+|샤딩|동일|향상|서버를 추가하면 계속 쓰기 성능 계속 향상 가능|
+
+##### MySQL 샤딩
+- 디비가 직접 지원하는 기능이 아니므로 `샤딩 플랫폼`을 사용해야함
+- 샤딩 플랫폼/미들웨어 종류
+  - Hibernate Shards
+  - Spock Proxy(MySQL Proxy 기반)
+  - Gizzard(Twitter)
+  - Spider(MariaDB 기본 내장)
