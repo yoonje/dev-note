@@ -9,7 +9,6 @@
 |clean-code|13장 14장 15장 16장 보충 필요|
 |cli|Everyday use 보충 필요|
 |kubernetes|중급 Pod,Object,Controller 보충 필요|
-|java-design-patterns|TO DO|
 |os|TO DO|
 |network|TO DO|
 |refactorying|TO DO|
