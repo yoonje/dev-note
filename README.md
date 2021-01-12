@@ -7,8 +7,8 @@
 |datastructure|binary search tree 코드 템플릿 기능 제거 필요|
 |effective-java|11장 12장 보충 필요|
 |clean-code|13장 14장 15장 16장 보충 필요|
-|cli|Everyday use 보충 필요|
-|kubernetes|중급 Pod,Object,Controller 보충 필요|
+|cli/basics|Everyday use 보충 필요|
+|kubernetes/basics|중급 Pod,Object,Controller 보충 필요|
 |os|TO DO|
 |network|TO DO|
 |refactorying|TO DO|
