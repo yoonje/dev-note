@@ -250,7 +250,78 @@ JVM
 
 제어문
 =======
-
+- 선택문
+  - switch 문: 값을 입력 받고 그 값의 경우로 분기하여 실행하는 키워드
+  ```java
+  switch(domain){
+    	case 1:
+        break;
+	    case 2:
+		    break;
+		    .
+		    .
+		    .
+	    default:
+		    break;
+  }
+  ```
+  - if 문: 조건을 판단하고 참이면 if 블럭을 실행하는 키워드
+  ```java
+  if (expression){
+    	statement;
+  }
+  ```
+  - if else 문: 조건을 판단하고 참이면 if 블럭을 실행하고 거짓이면 else 블럭을 실행하는 키워드
+  ```java
+  if (expression){
+    statement;
+  } else {
+    statement2;
+  }
+  ```
+  - if else if 문: 여러 조건을 판단하고 if, else if 블럭 중에 참이 있으면 실행하고 아니면 else 블럭을 실행하는 키워드
+  ```java
+  if (expression){
+    statement;
+  } else if (expression2){
+	  statement2;
+  } 
+  .
+	.
+	.
+  else {
+	  statement10;
+  }
+  ```
+- 반복문
+  - while: 조건을 검사하고 참이면 반복하는 키워드
+  ```java
+  while (expression){
+    statement;
+  }
+  ```
+  - do while: 명령을 최소 1번은 수행하고 조건을 검사하고 참이면 반복하는 키워드
+  ```java
+  do {
+    statement;
+  }
+  while (expression)
+  ```
+  - for: 반복할 횟수를 지정하여 반복하는 키워드
+  ```java
+  for (변수 초기화; expression; statement) {
+    statement;
+  }
+  ```
+  - for each: 반복 가능한 객체가 있을 때 반복할 횟수를 제어하여 반복하는 키워드
+  ```java
+  for (타입 변수명 : iterable 객체) {
+    statement;
+  }
+  ```
+- 제어문
+  - break: 반복문 중 반복을 종료할 수 있는 키워드
+  - continue: 반복문 중 특정 조건 하에서 명령문 실행을 skip할 수 있는 키워드
 
 클래스
 =======
