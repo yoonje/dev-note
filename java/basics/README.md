@@ -325,15 +325,216 @@ JVM
 
 클래스
 =======
+- 클래스 정의하는 방법
+  - 클래스: 클래스는 데이터 필드나 메소드의 모음
+  - 객체: 클래스에 규정된 인스턴스로서, 변수 대신 실제 값을 가짐
+  - 클래스 구성 멤버
+    - `필드(Field)`
+      - 객체의 데이터(상태)가 저장되는 곳
+      - 생성자와 메소드 전체에서 사용되며 객체가 소멸되기 전까지 객체와 함께 존재
+    - `생성자(Constructor)`
+      - 객체 생성 시 초기화
+      - 생성자는 메소드와 비슷하게 생겼지만 클래스 이름으로 되어있고 리턴 타입이 없음
+      - 생성자를 실행시키지 않고 클래스로부터 객체를 만들 수 없음
+      - 생성자가 생성되면 Heap Area에 객체가 생성되고 객체의 주소가 리턴
+      - 리턴된 객체의 주소는 클래스 타입 변수에 저장되어 객체에 접근 할 때 이용
+      - 아무것도 안해도 디폴트 생성자가 만들어짐
+    - `메소드(Method)`
+      - 객체의 동작에 해당하는 실행 블록
+      - 메소드를 호출하게 되면 중괄호 블록에 있는 코드들이 일괄적으로 실행되고 필드 읽기, 수정, 객체간 협력 수단 등 다양한 기능을 수행하기 위해 사용
+    - 접근 제어자
+      - public: 누구나 접근 할 수 있도록 할 때 사용
+      - protected: 같은 패키지 내 그리고 상속 받은 경우에만 사용
+      - package private: `기본 접근 지시자`로 같은 패키지 내에 있을 때만 접근 가능
+      - private: 해당 클래스 내에서만 접근 가능
+    - 클래스 제어자
+      - abstract: 추상 클래스를 선언하고자 할때 사용, 이 클래스는 구현이 끝나지 않은 추상적인 형태의 클래스이므로, 객체로 생성될 수 없음
+      - final: 상속이 더이상 되지 않는 클래스를 의미
+  - 클래스 정의
+  ```java
+  public class Car{
 
+    // 필드
+    int battery;
+    String engine;
 
+    // 생성자
+    Car() {...} 
+
+    // 메소드
+    void run() {...}
+    void stop() {...}
+  }
+  ```
+  
+- 객체 만드는 방법 (new 키워드 이해하기)
+  - 객체 생성
+  ```java
+  new Car();
+
+  Car car; // 메모리에 참조변수 car를 위한 공간 생성
+  car = new Car(); //  인스턴스 생성 및 대입
+  Car car = new Car();
+  ```
+  - nwe 키워드
+    - new 연산자로 생성된 객체는 `메모리 힙 영역`에 생성되고 객체의 주소를 리턴하는데 이 주소를 참조 타입인 클래스 변수에 저장
+- 메소드 정의하는 방법
+  - 메소드 정의
+  ```java
+  public class Car{
+    int battery;
+    String engine;
+
+  void charge(){
+        System.out.println("no charge");   
+  }
+
+  // 매개변수의 수를 모를 경우
+  void charge(int... values){
+    // int[] values == int...values
+
+    for(int i = 0; i < values.length; i++){
+         System.out.println("charge  "+i);   
+    }
+  }
+  ```
+  - 메서드 오버라이딩: 만약 자식의 클래스에서 부모 클래스의 메소드를 다른 방식으로 사용 및 구현하는 것
+  - 메서드 오버로딩: 같은 함수 이름을 가지고 있으나 매개변수, 리턴타입 등의 특징은 다른 여러의 메소드를 정의하는 것
+- 생성자 정의하는 방법
+  - 생성자 정의
+  ```java
+  public class Car {
+        int speed;
+        String color;
+    
+    Car(){
+      color = getDefaultColor();
+      speed =0;
+    }
+    Car(String color){}
+    Car(int speed){}
+    Car(String color, int speed){}
+    
+    String getDefaultColor(){
+      return "blue";
+    }
+  }
+  ```
+  - 초기화 블록
+    - 클래스 초기화 블록: 클래스 변수 초기화에 쓰임
+    - 인스턴스 초기화 블록: 인스턴스 변수 초기화에 쓰임
+  - 다양한 제어자
+    - 접근 제어자(pirvate, public ...)
+    - `static`: static이 붙은 변수와 메서드는 객체가 아닌 클래스에 속함
+    - `final`: final이 클래스 앞에 붙으면 해당 클래스는 상속될 수 없고 변수 또는 메서드 앞에 붙으면 수정되거나 오버라이딩 될 수 없음
+    - abstract: abstract이 클래스 앞에 붙으면 추상 클래스가 되어 객체 생성이 불가하고, 접근을 위해선 상속받아야함
+    - transient: 변수 또는 메서드가 포함된 객체를 직렬화할 때 무시하게하게 하는 제어자
+    - `synchronized`: 메서드는 한 번에 하나의 쓰레드에 의해서만 접근 가능하게 하는 제어자
+    - volatile: 해당 변수의 조작에 CPU 캐시가 쓰이지 않고 항상 메인 메모리로부터 읽게하는 제어자
+- this 키워드 이해하기
+  - this: 메소드나 생성자에서 현재 객체를 가리키고 있는 특별한 키워드
+  - 주로 생성자와 메소드의 매개변수 이름이 필드와 동일한 경우 필드를 명시하기 위해 사용
+  - 생성자 내에서 다른 생성자를 호출할 때 클래스 이름 대신 this를 사용해야함
+  - 빌더 패턴 등에서 유용하게 사용할 수 있는, 현재 인스턴스의 reference를 반환해줄 때 사용
 상속
 =======
-
+- 자바 상속의 특징
+  - 자바에서 최상위 계층 부모 클래스는 java.lang.Object
+  - 자바는 다중 상속을 지원하지 않으므로 extends 뒤에는 하나의 부모 클래스만 올 수 있음
+  - 상속을 받은 클래스는 부모의 클래스에 선언되어있는 public및 protected 로 선언돼어있는 모든 변수와 메소드를 내가 가진 것 처럼 사용
+- super 키워드
+  - super: 부모 클래스를 지징하는 키워드
+  - super(): 부모 클래스의 생성자
+  - super.함수이름(): 부모 클래스의 메소드 사용 
+- 메소드 오버라이딩
+  - 자식 클래스에서 부모 클래스에 있는 메소드와 동일하게 선언하는 것
+  > 메소드 오버로딩: 같은 함수 이름을 가지고 있으나 매개변수, 리턴타입 등의 특징은 다른 여러의 메소드를 정의하는 것
+  - 부모 클래스의 메소드보다 접근 제어자를 더 좁은 범위로 변경 못함
+  - 부모 클래스의 메소드보다 더 큰 범위의 예외를 선언할 수 없음
+- 추상 클래스
+  - 추상 클래스는 클래스를 만들기 위한 일종의 설계도로 인스턴스를 생성할 수 없는 클래스
+  - 반드시 하나 이상의 추상 메서드를 포함하고 있고, 생성자와 멤버 변수 그리고 일반 메서드를 가질 수 있음
+- 인터페이스
+  - 추상 클래스의 일종으로 추상화정도가 높아 일반 메서드나 멤버 변수를 가질 수 없고 오로지 추상 메소드나 상수만을 멤버로 가질 수 있는 클래스를 정의하는 키워드
+  - 인터페이스의 모든 멤버 변수와 메소드는 public static final이어야 하며, 이를 생략할 수도 있음
+  - 다중 상속이 가능
+- final 키워드
+  - final 키워드: 엔티티를 한 번만 할당하겠다는 의미의 키워드
+  - final 변수: 생성자나 대입연산자를 이용해 한 번만 초기화가 가능한 변수
+  - final 메소드: final 메소드는 오버라이드하거나 숨길 수 없음을 의미
+  - final 클래스: 해당 클래스는 상속할 수 없음을 의미하여 상속 계층에서 마지막 클래스라는 의미
+- Object 클래스
+  - java.lang.Object 클래스는 모든 클래스의 최상위 클래스로 기본 함수를 제공
+  - clone (native 메소드): Clonable한 객체만 사용 가능한 메소드로 객체를 복사하는 메소드, `Clonable 인터페이스`의 clone 이라는 메소드를 오버라이딩해야함
+  - equals: 객체의 참조값이 같은지만 비교하는 메소드
+  - getClass (native 메소드): 객체의 런타임에서의 클래스(타입)을 반환
+  - hashcode (native 메소드): 객체에 해당하는 해쉬코드를 만들어 반환
+  - toString: toString()은 이 객체를 stirng으로 표현하는 방법을 표현하는 메소드로 기본적으로 객체의 경우 hash값이 출력
+  - wait (native 메소드): 스레드를 정지 상태로 바꾸는 메소드 
+  - notify (native 메소드): 정지 상태에 있는 다른 스레드를 실행 상태로 바꾸는 메소드
+  - notifyAll (native 메소드): 정지 상태의 모든 스레드의 실행을 재개하는 메소드
 
 패키지
 =======
+- package 키워드
+  - 패키지: 클래스와 인터페이스 등의 집합을 의미
+    - 파일을 묶음으로써 효율적으로 관리할 수 있으며 이름 충돌 문제도 피할 수 있음
+    - 패키지 선언은 `package 패키지명`
+    - 어떤 클래스를 패키지에 추가하게 되면 클래스의 이름은 `패키지명.클래스명`
+  - 이름 없는 패키지
+    - 자바의 모든 클래스는 반드시 하나 이상의 패키지에 포함되어야하는데, 소스 파일에 어떤 패키지 선언도 없다면 기본적은으로 하나의 이름 없는 패키지에 모아서 컴파일
+- import 키워드
+  - import: 다른 패키지에 접근하기 위해 사용
+  ```java
+  package c.javapackage;
+  
+  import c.javapackage.sub.Sub;
+  
+  public cass Package {
+    public static void main(String[] args) {
+        Sub.subClassSaticMethod();
+        System.out.println(Sub.CLASS_NAME);     
+    }
+  }
+  ```
+  - import static: 다른 패키지의 static 한 변수와 메소드에 접근할 때 사용
+  ```java
+  package c.javapackage;
+  
+  import static c.javapackage.sub.Sub.subClassStaticMethod;
+  import static c.javapackage.sub.Sub.CLASS_NAME;
+  
+  public cass Package {
+    public static void main(String[] args) {     
+        subClassSaticMethod();
+        System.out.println(CLASS_NAME);
+    }
+  }
+  ```
 
+- 클래스 패스
+  - 클래스 패스: 클래스를 찾기 위한 경로로, JVM 프로그램을 실행할 때 읽을 클래스 파일을 찾는 기준이 되는 경로(루트 폴더)
+  - 클래스 패스 지정하기
+    - java runtime cp/-classpath 플래그 사용
+    ```java
+    java -cp 폴더위치 패키지명.클래스명;패키지명.클래스명;패키지명.클래스명;...
+    ```
+    ```java
+    java -classpath 폴더위치 패키지명.클래스명;패키지명.클래스명;패키지명.클래스명;...
+    ```
+    - CLASSPATH 시스템 환경 변수 지정
+    ```sh
+    // 쉘 커맨드에서 설정
+    CLASSPATH=클래스패스경로
+    ```
+    ```sh
+    echo $CLASSPATH
+    ```
+- 접근지시자
+  - public: 누구나 접근 할 수 있도록 할 때 사용
+  - protected: 같은 패키지 내 그리고 상속 받은 경우에만 사용
+  - package private: `기본 접근 지시자`로 같은 패키지 내에 있을 때만 접근 가능
+  - private: 해당 클래스 내에서만 접근 가능
 
 인터페이스
 =======
