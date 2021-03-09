@@ -465,7 +465,7 @@ JVM
   - final 클래스: 해당 클래스는 상속할 수 없음을 의미하여 상속 계층에서 마지막 클래스라는 의미
 - Object 클래스
   - java.lang.Object 클래스는 모든 클래스의 최상위 클래스로 기본 함수를 제공
-  - clone (native 메소드): Clonable한 객체만 사용 가능한 메소드로 객체를 복사하는 메소드, `Clonable 인터페이스`의 clone 이라는 메소드를 오버라이딩해야함
+  - clone (native 메소드): Clonable한 객체만 사용 가능한 메소드로 객체를 깊은 복사하는 메소드, `Clonable 인터페이스`의 clone 이라는 메소드를 오버라이딩해야함
   - equals: 객체의 참조값이 같은지만 비교하는 메소드
   - getClass (native 메소드): 객체의 런타임에서의 클래스(타입)을 반환
   - hashcode (native 메소드): 객체에 해당하는 해쉬코드를 만들어 반환
