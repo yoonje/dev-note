@@ -325,9 +325,9 @@ JVM
 
 클래스
 =======
+- 클래스: 클래스는 데이터 필드나 메소드의 모음
+- 객체: 클래스에 규정된 인스턴스로서, 변수 대신 실제 값을 가짐
 - 클래스 정의하는 방법
-  - 클래스: 클래스는 데이터 필드나 메소드의 모음
-  - 객체: 클래스에 규정된 인스턴스로서, 변수 대신 실제 값을 가짐
   - 클래스 구성 멤버
     - `필드(Field)`
       - 객체의 데이터(상태)가 저장되는 곳
@@ -538,32 +538,493 @@ JVM
 
 인터페이스
 =======
+- 인터페이스: 추상클래스보다 더욱 강력한 추상화를 제공하는 도구이고, 그를 통해 다형성을 더욱 강력하게 해주는 도구
+- 인터페이스 정의하는 방법
+  - 멤버변수는 모두 `상수형`으로 선언되어야함
+  - 메서드는 모두 `추상 메서드`로 선언되어야함
+  - Java 8부터 인터페이스에 `static 메소드`를 정의할 수 있음
+  - Java 8부터 인터페이스에 `default 메소드`를 정의할 수 있음
+  - Java 9부터 인터페이스에 `private 메소드`를 정의할 수 있음
+  ```java
+  public interface [인터페이스 이름] extends [부모 인터페이스명 ...] {
 
+		// 상수 (static final)
+		static final String example = "myExample"; 
+		/// static final은 생략될 수 있지만 그 의미는 유지됩니다.
 
+		// 추상 메소드 (public abstract)
+		public abstract void printExample();
+		// public abstract 는 생략될 수 있지만 그 의미는 유지됩니다.
+  }
+  ```
+- 인터페이스 구현하는 방법
+  - implements 키워드 사용
+  - 인터페이스가 가지고 있는 메소드를 하나라도 구현하지 않으면, 해당 클래스는 추상 클래스가 됨
+  ```java
+  interface Flyable{
+    void fly();
+  }
+
+  interface Jumpable {
+	 void jump();
+  }
+
+  class Bird implements Flyable, Jumpable {
+      @Override
+      public void fly() {
+          System.out.println("Bird's Flying");
+      }
+      @Override
+      public void jump() {
+          System.out.println("Bird's Jumping");
+      }
+  }
+  ```
+
+- 인터페이스 레퍼런스를 통해 구현체를 사용하는 방법
+  - 참조변수의 타입으로 인터페이스를 사용할 수 있고 이 경우 인터페이스가 가지고 있는 메소드만 사용
+  ```java
+  // 좋은 예. 인터페이스를 타입으로 사용했다.
+  Set<Son> sonSet = new LinkedHashSet<>();
+
+  // 나쁜 예. 클래스를 타입으로 사용했다.
+  LinkedHashSet<Son> sonSet = new LinkedHashSet<>();
+  ```
+- 인터페이스 상속
+  - extends 키워드로 (다중) 상속도 가능
+  ```java
+  interface Drawble {
+  	void draw();
+  }
+
+  interface Flyable {
+	  void perform();
+  }
+
+  interface Printable extends Drawble, Flyable {
+	  void print();
+  }
+
+  class Circle implements Printable {
+    
+    @Override
+    public void draw() {
+    }
+    
+    @Override
+    public void print() {
+    }
+
+  }
+  ```
+- 인터페이스의 기본 메소드 (Default Method), 자바 8
+  - default 키워드를 사용하여 기본 메소드를 구현할 수 있고 기본 메소드는 구현체에서 필수로 구현할 필요가 없음
+  - 이름이 같은 여러 개 디폴트 메소드가 있는 경우 오버라이딩해야함
+  - 기본 메소드를 통해서 추상 클래스의 많은 기능을 대체해주었지만 상태 정보를 변수에 저장하는 경우 추상 클래스가 필요
+  ```java
+  // 인터페이스
+  public interface PrintableAnimal extends Animal, Comparable<PrintableAnimal> {
+      // 자신의 메소드를 기본 메소드로 구현
+      default void print() {
+          System.out.println("이름 : " + getName());
+          System.out.println("다리개수 : " + getLegs());
+      }
+
+      // Comparable 인터페이스의 메소드를 상속하여 기본 메소드 구현
+      @Override
+      default int compareTo(PrintableAnimal o) {
+          return getLegs() - o.getLegs();
+      }
+  }
+
+  // 구현체
+  public class Snake implements PrintableAnimal {
+
+      @Override
+      public String getName() {
+          return "뱀";
+      }
+
+      @Override
+      public int getLegs() {
+          return 0;
+      }
+
+  }
+
+  // 사용하기
+  Snake snake = new Snake();
+  snake.print(); // PrintableAnimal의 기본 메소드 사용
+  ```
+- 인터페이스의 static 메소드, 자바 8
+  - static 메소드로 추가가 가능하여 디폴트 메소드처럼 사용 가능
+  - static 메소드이므로 상속이 불가능
+  ```java
+  public interface PrintableAnimal extends Animal, Comparable<PrintableAnimal> {
+
+    static String getDescription() {
+        return "출력기능이 있는 동물 인터페이스";
+    }
+  }
+
+  System.out.println(PrintableAnimal.getDescription()); 
+  ```
+- 인터페이스의 private 메소드, 자바 9
+  - private 메소드로 추가가 가능하여 디폴트 메소드처럼 사용이 가능
+  - private 메소드이므로 구현체에서 구현할 수 없고 자식 인터페이스에서도 상속이 불가능
+  ```java
+  public interface PrintableAnimal extends Animal, Comparable<PrintableAnimal> {
+
+    static String getDescription() {
+        return "출력기능이 있는 동물 인터페이스";
+    }
+
+    // 자신의 메소드를 기본 메소드로 구현
+    // private 메소드 사용
+    default void print() {
+        printName();
+        printLegs();
+    }
+    
+    // private 메소드로 기본 메소드에서 사용할 로직 분리 1
+    private void printName() {
+        System.out.println("이름 : " + getName());
+    }
+    
+    // private 메소드로 기본 메소드에서 사용할 로직 분리 2
+    private void printLegs() {
+        System.out.println("다리개수 : " + getLegs());
+    }
+
+    // Comparable 인터페이스의 메소드를 상속하여 기본 메소드 구현
+    @Override
+    default int compareTo(PrintableAnimal o) {
+        return getLegs() - o.getLegs();
+    }
+
+    default void otherDefaultMethod() {
+        System.out.println("other default method");
+    }
+  }
+  ```
 예외처리
 =======
+- 자바에서 예외 처리 방법 (try, catch, throw, throws, finally)
+  - try-catch: try에서 시도를 하고 catch애서 예상되는 예외를 처리하는 방법
+  ```java
+  try {
+    return dividend % divisor; // 예외가 발생할 가능성이 있는 코드.
+  }
+  catch (ArithmeticException e) {
+    throw new DivideByZeroException(); // 예외 처리
+  }
+  catch (RunTimeException e) {
+    throw new DivideByZeroException(); // 예외 처리
+  }
+  ```
+  > 순서대로 catch문을 순회하기 때문에 만약 객체의 super calss가 먼저 등장하게 되면, 어떤 한 clause는 영영 실행이 안될 수 있어서 compile error를 냄
+  - try-catch-finally: try-catch에서 finally는 항상 실행될 코드를 목적으로 사용
+  ```java
+  try {
+    return dividend % divisor; // 예외가 발생할 가능성이 있는 코드.
+  }
+  catch (ArithmeticException e) {
+    throw new DivideByZeroException(); // 예외 처리
+  }
+  finally {
+	  System.out.println("done");
+  }
+  ```
+  - try-with-resoucre: try 구문이 종료되면 해제를 도와주는 기능으로 AutoClosable이라는 인터페이스를 반드시 구현해서, 자바가 try 구문 후에 close() 라는 메소드를 사용
+  ```java
+  try (
+      FileInputStream is = new FileInputStream("file.txt");
+      BufferedInputStream bis = new BufferedInputStream(is)
+  ) {
+      int data = -1;
+      while ((data = bis.read()) != -1) {
+          System.out.print((char) data);
+      }
+  } catch (IOException e) {
+      e.printStackTrace();
+  }
+  ```
+  - throw: throw 키워드를 사용해 예외를 발생시킬 수 있음
+  ```java
+  throw new Exception();
+  ```
+  - throws: throws를 메소드에 붙임으로서, 해당 메소드에서 throw가 발생된다는것을 선언해줄 수 있어 이 메소드를 사용하는 클라이언트에게 어떤 예외를 처리해야하는지 알려줌
+  ```java
+  static File createFile(String fileName) throws Exception {
+    if (fileName == null || fileName.equals("")) {
+        throw new Exception("File not found.");
+    }
 
+    File f = new File(fileName);
+    f.createNewFile();
+    return f;
+  }
+  ```
+- 자바가 제공하는 예외 계층 구조
+  - 구조
+  https://media.geeksforgeeks.org/wp-content/uploads/Exception-in-java1.png
+  - Checked Exception: Checked Exception은 확인된 예외로 컴파일 시점에 확인되는 예외로 반드시 예외 처리해야하는 예외(IOException, SQLException...)
+  - Unchecked Exception: Checked Exception과 반대로 컴파일 시점에 확인할 수 없는 예외로 RuntimeException을 상속한 예외(NPE, IndexOutOfBoundException, IllegalArgumentException...)
+- Exception과 Error의 차이는?
+  - Exception: 문제가 발생한다고 하면, 개발자가 대응할 수 있는 문제로 예외 처리가 가능
+  - Error: 문제가 발생한다고 하더라도 개발자가 대응할 수 없는 문제로 예외 처리가 불가능
+- 커스텀한 예외 만드는 방법
+  - Checked Exception 커스텀 만들기: Exception 클래스를 상속
+  - Unchecked Exception 커스텀 만들기: RuntimeException 클래스를 상속
 
 멀티쓰레드
 =======
+- 쓰레드
+  - 하나의 프로세스 내에서 더 작은 단위로 독립적으로 실행시키며, 제어가 가능한 흐름
+  - 자바에서 쓰레드를 만드는 방법은 크게 Thread 클래스를 상속받는 방법과 Runnable인터페이스를 구현하는 방법이 존재
+- Thread 클래스와 Runnable 인터페이스
+  - java.lang 패키지의 Thread라는 클래스를 상속하여 스레드를 만들 수 있음, run 이외의 다른 것들을 오버라이딩할 필요가 있으면 이를 사용
+  ```java
+  class ThreadExample extends Thread {
 
+    @Override
+    public void run() {
+        System.out.println("thread started");
+   }
+  }
+
+  public static void main(String[] args) { // 메인 메소드에서 쓰레드 시작.
+    Thread th = new ThreadExample(); // 쓰레드 생성.
+    th.start(); // 쓰레드 시작.
+  }
+  ```
+  - java.lang 패키지의 Runnable 인터페이스를 구현하여 스레드를 만들 수 있음, 대부분의 경우 run 만 오버라이딩하여 스레드를 만들 수 있으므로 이를 보통 사용
+  ```java
+  class ThreadExample implements Runnable {
+
+    @Override
+    public void run() {
+        System.out.println("thread started");
+    }
+  }
+
+  public static void main(String[] args) { // 메인 메소드에서 쓰레드 시작.
+    Thread th = new Thread(new ThreadExample()) // Runnable 객체를 Thread에 주입.
+    th.start(); // 쓰레드 시작.
+  }
+  ```
+  > runnable interface에는 run() 메소드가 한개만 존재하므로, java 8의 람다를 이용해 아래와 같이 생성할 수 있음
+- 쓰레드의 상태
+  - 자바는 스레드 상태를 나타내는 `Thread.State`라는 Enum을 제공
+  - `NEW`: 스레드가 생성되었지만 start() 메소드가 호출되지 않은 상태로 모든 스레드는 이 상태에서 시작
+  - `RUNNABLE`: 쓰레드가 실행중이거나 운영체제가 예약하여 실행이 가능할 때
+  - `BLOCKED`: 동기화된(synchronized) 메소드 또는 블록에 들어갈 수 있도록 락을 얻으려고(aquire) 대기 중이기 때문에 스레드가 샐행중이 아닌 상태
+  - `WAITING`: Object.wait(), Thread.join() 메소드가 호출되어 스레드가 실행되고 있지 않는 상태
+  - `TIMED_WAITING`: Thread.sleep()를 호출했거나 타임아웃을 사용하여 Object.wait(), Thread.join()을 호출했을 때 스레드가 실행되고 있지 않는 상태
+  - `TERMINATED`: run() 메소드가 정상적으로 종료되었거나 예외가 발생하여 스레드가 실행이 완료된 상태
+- 쓰레드 상태 제어 메소드
+  - sleep(millis): 현재 실행중인 쓰레드를 Sleeping pool로 이동시키고 안에 있는 시간 이후, 다시 Runnable pool로 이동
+  - join(): Join메소드가 실행되면 이는 joining pool에 들어가게 되며, 모든 수행이 끝나면, 그 이후에 Runnable pool에 들어갈 수 있음
+  - wait(): Object 클래스에 소속되어 있는 메소드, 실행하면 그 쓰레드는 모니터링 락을 반환하고, 객체의 wait pool로 들어감
+  - notify(), notifyall(): Object 클래스에 소속되어 있는 메소드, wait pool에 있는 쓰레드는 다른 객체의 notify() 콜로 깨움
+  - yield(): 쓰레드 내부에서 yield()를 사용하면, 쓰레드를 점유할 기회를 양보하여 다른 쓰레드가 먼저 선택되도록 할 수 있음
+  - start() : 쓰레드를 구동 시킴
+  - run() : 쓰레드 수행 코드가 들어가는 메소드
+- 쓰레드의 우선순위
+  - Thread 클래스의 getPriority(), setPriority() 메소드를 사용하여 스레드의 우선순위를 컨트롤할 수 있음
+  - 자바에서 생성된 모든 쓰레드는 기본적으로 5의 우선순위를 가짐
+- Main 쓰레드
+  - 메인 쓰레드는 java 프로그램이 시작 될 때, JVM에 의해 생성되는 쓰레드
+  - 메인 쓰레드를 시작으로 `자식 쓰레드들이 쓰레드를 생성해 나감`
+  > 데몬 쓰레드: 데몬(Daemon)이란 보통 리눅스와 같은 유닉스계열의 운영체제에서 백그라운드로 동작하는 프로그램인데, 데몬 쓰레드는 이와 같이 보조적인 역할로 사용되는 쓰레드 thread.setDaemon(true);로 데몬으로 설정 가능
+- 동기화
+  - 멀티 스레드 프로그램은 여러 스레드가 동일한 리소스에 접근하려고 할 때 예기치 않는 결과를 생성할 수 있어 처리가 필요함
+  - 자바는 동기화된 블록을 사용하여 스레드를 생성하고 작업을 동기화하는 방법을 제공하는데 이때 `synchronized` 키워드를 사용
+  - 모든 객체에는 고유락/모니터락이 존재하는데, synchronized를 사용하면 쓰레드는 syncronized 범위에 접근 시에 객체에 대한 락을 가져감
+  ```java
+  /**
+  * 출금만 가능한 계좌
+  */
+  public class Account {
+
+      private int balance;
+
+      public Account(int money) {
+          this.balance = money;
+      }
+
+      private boolean hasBalance() {
+          return balance > 0;
+      }
+
+      public synchronized void withdraw(int money) {
+          if (!hasBalance()) {
+              System.out.println("Insufficient balance");
+              return;
+          }
+
+          balance -= money;
+          System.out.println("balance is : " + balance);
+      }
+  }
+
+  /**
+  * 100원씩 출금하는 스레드
+  */
+  public class AccountWithdrawThread extends Thread {
+
+      private final Account account;
+
+      public AccountWithdrawThread(Account account) {
+          this.account = account;
+      }
+
+      @Override
+      public void run() {
+          account.withdraw(100);
+      }
+  }
+
+  public class AccountApp {
+      public static void main(String[] args) {
+          Account account = new Account(1000);
+
+          // 스레드 여러개 만들어서 실행하기
+          IntStream.range(0, 15).forEach(i -> new AccountWithdrawThread(account).start());
+      }
+  }
+  ```
+- 데드락
+  - 데드락(Deadlock) 또는 교착상태란 최소 두개의 스레드가 다른 리소스에 대해 락(lock)을 유지하고 있고 둘 다 다른 리소스가 작업을 완료할 때까지 기다리는 상황
+  ```java
+  Object lock1 = new Object();
+  Object lock2 = new Object();
+
+  Thread t1 = new Thread( () -> {
+        while(true){
+              synchronized (lock1) {
+                  try {
+                      Thread.sleep(100);
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+                  synchronized (lock2) {
+                      System.out.println("lock1->lock2");
+                  }
+              }
+          }
+  });
+
+  Thread t2 = new Thread( () -> {
+      while(true){
+          synchronized (lock2) {
+              synchronized (lock1) {
+                  System.out.println("lock2->lock1");
+              }
+        }
+      }
+  });
+
+  t1.start();
+  t2.start();
+  ```
+  - 데드락이 발생하는 필수 조건들
+    - 상호 배제(Mutual Exclusion): 자원은 한 번에 한 프로세스만이 사용할 수 있어야함
+    - 점유 대기(Hold and Wait): 자원을 점유하면서도 다른 프로세스가 사용하고 있는 자원에 대해 대기
+    - 비선점(No Preemption): 다른 프로세스에 할당된 자원은 사용이 끝날 때까지 강제로 뺏을 수 없음
+    - 순환 대기(Circular Wait): 락 자원 획득이 T1(A -> B), T2(B -> C), T3(C -> D), T4(D -> A) 로 되어 있고, 서로가 물려 있는 상태를 뜻함
 
 Enum
 =======
+- enum
+  - Enum은 제한된 기능을 까지고 허용하는 값이 적은 `클래스`의 변형된 유형
+  - `java.lang.Enum 클래스`를 자동으로 상속하는데, Enum 클래스는 name과 ordinal 필드를 갖고 있고 name 필드에는 정의한 열거 상수명이 String이 ordinal에는 열거 상수의 정의 순서가 int로 들어가 있음
+ordinal에는 열거 상수의 정의 순서가 int로 있음
+  - 타입 세이프티를 보장
+- enum 정의하는 방법
+  - 열거 상수
+  ```java
+  public enum {
+	  MONDAY,TUESDAY,WEDNSDAY;
+  }
+  ```
+  - 열거 필드와 메소드
+  ```java
+  public enum Color {
+    // 생성자 파라미터 대로 적용
+    RED("빨강"), GREEN("초록"), BLUE("파랑");
 
+    // 필드
+    private String desc;
+
+    // 메소드
+    public String getDesc() {
+        return desc;
+    }
+
+    // 생성자
+    Color(String desc) {
+        this.desc = desc;
+    }
+  }
+  ```
+- enum이 제공하는 메소드
+  - name() 메소드: 필드명을 그대로 가져옴
+  - ordinal() 메소드: 거형의 순서를 가져옴
+  - values() 메소드: 해당 Enum 클래스의 모든 열거 상수 목록을 리턴
+  - valueOf(String key) 메소드: Enum의 기본 필드인 name 필드를 기반으로 동일한 열거 상수를 반환하고 존재하지 않을 때엔 IllegalArgumentException 예외를 던짐
+- EnumSet
+  - EnumSet은 Enum과 함께 사용할 수 있는 특별한 Set 구현체
+  ```java
+  public class Text {
+    public enum Style { BOLD, ITALIC, UNDERLINE, STRIKETHROUGH }
+    
+    // 어떤 Set을 넘겨도 되나 EnumSet이 가장 좋다.
+    // 이왕이면 Set Interface로 받는게 좋은 습관이다.
+    public void applyStyles(Set<Style> styles) {...}
+  }
+  text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC));
+  ```
+- EnumMap
+  - EnumMap은 맵의 키의 타입을 열거형으로 가지는 특수한 Map
+  ```java
+  EnumMap<Color, String> colorStringEnumMap = new EnumMap<>(Color.class);
+
+  colorStringEnumMap.put(Color.RED, "빨간색");
+  colorStringEnumMap.put(Color.BLUE, "파란색");
+  colorStringEnumMap.put(Color.GREEN, "초록색");
+
+  colorStringEnumMap.forEach((k, v) -> {
+      System.out.println("key: " + k + ", value: " + v);
+  });
+  ```
 
 애노테이션
 =======
-
+- 애노테이션 정의하는 방법
+- @retention
+- @target
+- @documented
+- 애노테이션 프로세서
 
 IO
 =======
-
+- 스트림 (Stream) / 버퍼 (Buffer) / 채널 (Channel) 기반의 I/O
+- InputStream과 OutputStream
+- Byte와 Character 스트림
+- 표준 스트림 (System.in, System.out, System.err)
+- 파일 읽고 쓰기
 
 제네릭
 =======
-
+- 제네릭 사용법
+- 제네릭 주요 개념 (바운디드 타입, 와일드 카드)
+- 제네릭 메소드 만들기
+- Erasure
 
 랑다식
 =======
-
+- 람다식 사용법
+- 함수형 인터페이스
+- Variable Capture
+- 메소드, 생성자 레퍼런스
