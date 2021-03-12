@@ -15,4 +15,6 @@
 |the-art-of-readable-code|TO DO|
 |object|TO DO|
 |object-oriented-facts-and-misunderstandings|TO DO|
-|java|TO DO|
+|java/java8|TO DO|
+|java/test|TO DO|
+|java/concurrency|TO DO|
