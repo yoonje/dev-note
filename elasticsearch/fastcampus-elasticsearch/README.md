@@ -1,5 +1,5 @@
 # ElasticSearch 정리 자료
-박상헌님의 엘라스틱서치 강의 정리
+박상헌님의 패스트캠퍼스 엘라스틱서치 강의 정리
 
 ##### ElasticSearch version: 6.7.0(7.x의 내용도 일부 수록)
 
