@@ -1001,19 +1001,188 @@ ordinal에는 열거 상수의 정의 순서가 int로 있음
 
 애노테이션
 =======
+- 애노테이션: 자바의 특수한 인터페이스 이며 기본적으로 이름처럼 주석을 다는 역할로 일반적인 주석과는 다르게 추가적인 작업을 덧붙일 수 있으며 IDE에 유용한 힌트를 줌
+> 메타 애노테이션: 개발자가 새로운 애노테이션을 만들 때 사용할 위치나 자바 컴파일러나 런타임에서 어떻게 처리될지 정책을 명시하는 애노테이션
 - 애노테이션 정의하는 방법
-- @retention
-- @target
-- @documented
+  - @interface 키워드를 사용하여 정의 가능
+  ```java
+  @Retention(RetentionPolicy.SOURCE)
+  @Target(ElementType.METHOD)
+  public @interface Logger {
+      String value() default "";
+  }
+  ```
+  - 빌트인 어노테이션
+    - @Override: 현재 메서드가 슈퍼 클래스의 메서드를 오버라이드한 것임을 컴파일러에게 명시할 때 사용
+    - @Deprecated: 다음 버전에서 사용되지 않을 때 명시해서 사용
+    - @SupperessWarnings: 경고를 제거하는 어노테이션으로 개발자가 의도를 가지고 설계를 했는데 컴파일은 이를 알지 못하고 컴파일 경고를 띄울 수 있기 때문에 이를 제거할 때 사용
+    - @FunctionalInterface: Java 8이상에서 사용가능하고 컴파일러에게 함수형 인터페이스라는 것을 알릴 때 사용
+    - @SafeVarargs: Java 7이상에서 사용가능하고 제네릭같은 가변인자 매개변수 사용시 경고를 무시할 때 사용
+    - @Native: 네이티브 메소드에서 참조되는 상수 앞에 붙일 때 사용
+  - 애노테이션을 선언하기 위한 메타 애노테이션 종류
+    - @Target, @Retention, @Documented, @Inherited ...
+- @Retention
+  - @Retention 애노테이션은 자바 컴파일러와 자바 런타임이 커스텀 애노테이션을 어떻게 처리해야하는지 알려주는 역할
+  - RetentionPolicy 종류
+    - SOURCE : 소스 상에서만 애노테이션이 보이고 컴파일 되면 사라짐
+    - CLASS : 애노테이션이 클래스 파일에 존재하지만 JVM을 통한 자바 런타임이 접근할 수 없음
+    - RUNTIME : 자바 런타임이 애노테이션을 접근할 수 있고 그를 통해 무언가 추가적인 작업이 가능함을 의미
+  ```java
+  @Target(ElementType.METHOD)
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface Logger {
+      String value() default "";
+  }
+  ```
+- @Target
+  - @Target 애노테이션은 자바 컴파일러가 애노테이션이 어디에 적용될 지 결정하기 위해 사용
+  - ElemType 요소
+    - CONSTRUCTOR: 생성자 선언 시
+    - FIELD: enum 상수를 포함한 필드 값 선언 시
+    - LOCAL_VARIABLE: 지역변수 선언 시
+    - METHOD: 메소드 선언 시
+    - PACKAGE: 패키지 선언 시
+    - PARAMETER: 매개 변수 선언 시
+    - TYPE: 클래스, 인터페이스, Enum 등 선언시
+  ```java
+  @Target({ElementType.METHOD, ElementType.TYPE}) // 메소드와 타입에 애노테이션 설정 가능
+  @Retention(RetentionPolicy.RUNTIME)
+  public @interface Logger {
+    String value() default "";
+  }
+  ```
+- @Documented
+  - @Documented 애노테이션은 Javadoc에 해당 애노테이션 정보를 표시하기 위해 사용
+  ```java
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @Documented
+  public @interface Logger {
+      String value() default "";
+  }
+  ```
 - 애노테이션 프로세서
+  - 자바 컴파일러의 컴파일 단계에서, 유저가 정의한 어노테이션의 소스코드를 분석하고 처리하기 위해 사용되는 훅
+  - 컴파일 타임에 조작이 완료된 상황이기 때문에 런타임 비용이 없음
+  - javax.annotation.processing.Processor 인터페이스를 구현하거나 자바가 제공하는 기본적인 추상 클래스인 AbstractProcessor를 사용하여 등록할 수 있음
+  ```java
+  public class LoggerProcessor extends AbstractProcessor {
+
+    /**
+     * 이 프로세서로 처리할 애노테이션
+     */
+    @Override
+    public Set<String> getSupportedOptions() {
+        return Set.of(Logger.class.getName());
+    }
+
+    /**
+     * 어떤 소스코드 버전을 지원할 것인지 명시 (필요하지 않다면 재정의하지 않아도 됨)
+     */
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
+
+    /**
+     * 애노테이션을 처리하기
+     */
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(Logger.class);
+
+        elements.forEach(el -> {
+            if (el.getKind() != ElementKind.METHOD) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Cannot use this annotation!"); // 애노테이션이 메소드에 붙어있지 않다면 에러 발생!
+            } else {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Processing...");
+            }
+        });
+
+        return true; // 애노테이션이 이 프로세서에 특화되어있다면 true, 다른 프로레서에서도 처리가 가능하다면 false
+    }
+  }
+  ```
 
 IO
 =======
 - 스트림 (Stream) / 버퍼 (Buffer) / 채널 (Channel) 기반의 I/O
+  - 스트림(Stream): I/O 스트림(Stream)은 디스크 또는 기타 소스의 순차적 바이트 스트림을 처리하는 방법으로 스트림은 `단방향 통신`만 가능하고 그 때문에 입출력을 모두 처리하려면 입력 스트림과 출력 스트림 모두 필요
+  > 자바8에 추가된 컬렉션 API의 Stream과 다름
+  - 버퍼(Buffer): byte, char, int 등 기본 데이터 타입을 저장할 수 있는 저장소로, 배열과 마찬가지로 제한된 크기에 순서대로 데이터를 저장하는데 채널을 통해 소켓, 파일 등에 데이터를 전송할 때나 읽어올 때 버퍼를 사용
+  - IO와 NIO
+    - IO: `스트림`에서 read() 와 write() 가 호출이 되면, 데이터가 입력되고 데이터가 출력되기 전까지 스레드는 블로킹 상태로 처리
+    - NIO: 자바의 1.4버전부터 추가된 API 로 비동기 방식 및 논블로킹 처리가 가능하며, 스트림이 아닌 `채널`을 사용하여 `양방향 입출력`이 가능
 - InputStream과 OutputStream
+  - InputStream과 OutputStream은 스트림의 핵심적인 API로 이 둘은 모두 데이터를 바이트(byte) 단위로 입출력을 하는 스트림으로 다양한 구현체가 존재
+  - InputStream과 핵심 메소드
+  ```java
+  // 핵심 메소드
+  public abstract int read() throws IOException;
+  public int read(byte b[]) throws IOException;
+  public int read(byte b[], int off, int len) throws IOException;
+  ```
+  - OutputStream 핵심 메소드
+  ```java
+  // 핵심 메소드
+  public abstract void write(int b) throws IOException;
+  public void write(byte b[]) throws IOException;
+  public void write(byte b[], int off, int len) throws IOException;
+  ```
+  - 종류
+  |입력 스트림|출력 스트림|종류|
+  |------|---|---|
+  |FileInputStream|FileOutputStream|파일|
+  |ByteArrayInputStream|ByteArrayOutputStream|메모리(바이트 배열)|
+  |PipedInputStream|PipedOutputStream|프로세스간 통신|
+  |AudioInputStream|AudioOutputStream|오디오 장치|
+
 - Byte와 Character 스트림
+  - Byte 스트림: 1바이트 단위로 데이터를 처리하는 스트림으로 일반적인 스트림
+  - Character 스트림: 바이트가 아닌 문자(Character) 단위로 처리하는 스트림으로 개발자에게 더 친숙하고 인코딩이나 유니코드 등의 문제를 숨긴 API를 제공하며 Reader, Writer 클래스를 사용
+  - 바이트기반과 문자기반 스트림 비교
+  |바이트 기반 스트림|문자 기반 스트림|
+  |--------|----------|
+  |FileInputStream | FileReader |
+  |FileOutputStream | FileWriter |
+  |ByteArrayInputStream | CharArrayReader |
+  |ByteArrayOutputStream | CharArrayWriter |
+  |PipedInputStream | PipedReader |
+  |PipedOutputStream | PipedWriter |
+  |StringBufferInputStream(deprecated) | StringReader |
+  |StringBufferOutputStream(deprecated) | StringWriter |
+
 - 표준 스트림 (System.in, System.out, System.err)
+  - System.out: 콘솔에 출력하기 위함
+  - System.in: 키보드로 입력을 받기 위함
+  - System.err: 에러 출력을 위함
 - 파일 읽고 쓰기
+  - 텍스트 파일의 경우, 문자 스트림 클래스를 사용하면 되고, 바이너리 파일인 경우, 바이트 스트림을 기본적으로 사용
+  - 입출력 효율을 위해 Buffered 계열의 보조 스트림을 함께 사용하는게 좋음
+  ```java
+  // InputStream, OutputStream
+  try (InputStream is = new FileInputStream("input.png");
+     OutputStream os = new FileOutputStream("output.png")) {
+    int line;
+    while ((line = is.read()) > -1) {
+        os.write(line);
+    }
+  } catch (IOException e) {
+      e.printStackTrace();
+  }
+  ```
+  ```java
+  // Reader, Writer 사용
+  try (BufferedReader in = new BufferedReader(new FileReader("input.txt"));
+     BufferedWriter out = new BufferedWriter(new FileWriter("output.txt"))) {
+    String line;
+    while ((line = in.readLine()) != null) {
+        out.write(line);
+    }
+  } catch (IOException e) {
+      e.printStackTrace();
+  }
+  ```
 
 제네릭
 =======
