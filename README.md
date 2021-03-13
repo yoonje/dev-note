@@ -8,7 +8,9 @@
 |effective-java|11장 12장 보충 필요|
 |clean-code|13장 14장 15장 16장 보충 필요|
 |linux/art-of-cli|Everyday use 보충 필요|
-|kubernetes/basics|중급 Pod,Object,Controller 보충 필요|
+|kubernetes/basics|TO DO|
+|kubernetes/inflearn|중급 Pod,Object,Controller 보충 필요|
+|ELK/inflearn|TO DO|
 |os|TO DO|
 |network|TO DO|
 |refactorying|TO DO|
@@ -18,3 +20,4 @@
 |java/java8|TO DO|
 |java/test|TO DO|
 |java/concurrency|TO DO|
+|java-by-comparison|TO DO|
