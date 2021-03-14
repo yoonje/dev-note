@@ -1187,13 +1187,209 @@ IO
 제네릭
 =======
 - 제네릭 사용법
+  - 타입(Class, Interface)들을 정의할 때 타입을 파라미터로 쓸수 있게 하는 것으로 컴파일 타임에 타입 의존성을 최대한 늦춰서 여러 타입을 받을 수 있게 하는 기능
+  - primitive type은 Object를 상속받지 않으므로 제네릭스 사용 불가
+  - 컴파일 타임에 타입 의존성을 체크하므로 static 변수에는 사용 불가
+  - List<E>의 raw type이란 List인데, 타입 매개변수를 쓰지 않은 경우를 말하며 raw type은 사용하면 안됨
+  ```java
+  // 제네릭 클래스 선언
+  class MyArray<T>{
+    T element;
+    void setElement(T element){this.element = element;}
+    T getElement(){return element;}
+  }
+  // <T>는 다양한 타입을 넣어서 사용할 수 있다.
+  // T에 값이 들어온 이후에는 그 타입만 쓸 수 있다.
+  ```
+  ```java
+  // 제네릭 클래스 사용
+  MyArray<Integer> myArr  = new MyArray<Integer>();    
+  ```
+  ```java
+  // 제네릭 메소드 선언
+  public class Test {
+    public <T> Person<T> naming(T t) { }
+	  }
+  }
+  // 메소드에서 별도로 제네릭을 쓰고 싶다면 <T>라는것으로 제네릭을 쓴다고 표기해준다. (타입을 먼저 명시)
+  // 타입을 파라미터로 받거나 리턴할 때 사용
+  ```
+  ```java
+  Person<String> resultMethod = naming("My Name is...");
+  ```
 - 제네릭 주요 개념 (바운디드 타입, 와일드 카드)
-- 제네릭 메소드 만들기
+  - 타입 파라미터: 제네릭에서 타입을 파라미터로 지정하는 것으로 `<T>`를 뜻하며 메소드 파라미터는 값(Value)이고, 타입 파라미터는 타입(Type)
+  ```java
+  public class Person<T> {
+    private T t;
+    public void set(T t) {
+    	this.t = t;
+    }
+    public T get() {
+    	return t;
+    }
+  }
+  ```
+  - 멀티 타입 파라미터: 제네릭에서 두 개 이상의 타입 파라미터를 지정하는 것
+  ```java
+  public class Person<T, M> { }
+  ```
+  - 제네릭 타입: 타입 파라미터를 가지는 제네릭 클래스와 제니릭 인터페이스를 의미
+  - 바운디드 타입: 메소드의 파라미터로 상위타입 또는 상위타입의 하위 클래스 타입의 인스턴스만 가지게하는 기능으로 상위 타입은 클래스와 인터페이스 모두 가능
+  ```java
+  public class Wrapper<T> {
+
+      private final T value;
+
+      public Wrapper(T value) {
+          this.value = value;
+      }
+  }
+
+  Wrapper<String> wrapper1 = new Wrapper<>();
+  Wrapper<Integer> wrapper2 = new Wrapper<>();
+  }
+  ```
+  ```java
+  public class Wrapper<T extends Number> {
+    private T value;
+
+    public byte getByteValue() {
+        return value.byteValue();
+    }
+  }
+
+  Wrapper<String> wrapper1 = new Wrapper<>(); // 컴파일 에러 발생
+  Wrapper<Integer> wrapper2 = new Wrapper<>();
+  ```
+  - 와일드 카드: 타입 파라미터에 구체적인 값을 제공하지 않고 모든 타입을 의미하는 값을 넣고 싶을 때 사용하며 와일드카드는 물음표(?)로 나타냄
+  ```java
+  List<?> list = Arrays.asList("alan", 1, 100L, new User("bsw", "bsw@ss.com"));
+
+  List<?> hobbies = new ArrayList<String>();
+  ```
 - Erasure
+  - 제네릭이 없는 컬렉션과 제네릭이 추가된 버전의 컬렉션이 함께 사용될 때 호환성 문제를 해결하기 위해 만든 기능
+  - 제네릭 타입 파라미터는 컴파일이 되면 없어지고 바이트코드에 반영되지 않음
 
 랑다식
 =======
+- 람다식
+  - 람다식은 메서드를 하나의 식으로 표현하는 선언적 프로그래밍의 방법으로 원래의 자바는 익명 클래스를 이용하여 익명 구현 객체를 사용했던 방식을 함수형 프로그래밍을 도입하면서 가단하게 표현하게 만든 방법
+  - 보통의 메서드와 달리 이름이 없음
+  - 보통의 메서드와 달리 메서드가 아닌 함수이므로 클래스에 종속하지 않으며 어느곳에 종속적이지 않음
+  - 매개변수의 인자가 될 수 있고, 반환값이 될 수 있고, 자료구조에 담길 수 있음
+  - 익명 클래스는 새로운 scope를 갖지만, 람다는 람다를 감싸고있는 전체 scope를 공유
 - 람다식 사용법
-- 함수형 인터페이스
+  - 기본 : (int num) -> {System.out.println(num);} 
+  - 단일 실행문은 중괄호 제거 : (int num) -> System.out.println(num); 
+  - 단일 인자는 타입 생략 : (num) -> System.out.println(num); 
+  - 단일 인자는 소괄호 제거 : num -> System.out.println(num); 
+  - 인자가 없으면 소괄호 필수 : () -> System.out.println("매개변수 없음"); 
+  - 인자가 여러개면 소괄호 필수 : (x, y) -> System.out.println(x, y); 
+  - 인자가 없고 반환값이 있으면 : () -> {return value;}; 실행코드가 return문 뿐이면 return 키워드 생략 가능 : () -> value; 
+  - 매개변수, 리턴타입 둘다 있으면 : (x, y) -> x+y;
+
+- 함수형 인터페이스: 함수형 인터페이스는 default 메소드가 아닌 1개의 추상 메소드만을 갖고 있는 인터페이스
+  - @FunctionalInterface를 통해서 커스텀 함수형 인터페이스 정의 및 람다 구현 가능
+  ```java
+  // 함수형 인터페이스
+  @FunctionalInterface
+  public interface MyListener {
+      void listen(String data);
+  }
+
+  // 함수형 인터페이스를 파라미터로 받는 메소드
+  public void onAction(MyListener listener) {
+      listener.listen("data");
+  }
+
+  // 함수형 인터페이스 람다로 구현
+  MyListener listener = data -> System.out.println("listening data : " + data);
+
+  // 함수 실행
+  onAction(listener);
+  ```
+  - 기본 함수형 인터페이스의 종류
+    - Function<T,R> : T 타입을 받아서 R로 변환하는 함수 인터페이스
+      - R apply(T t);
+    - BiFunction<T,U,R> : T와 U를 받아 R로 리턴하는 함수 인터페이스
+      - R apply(T t, U u);
+    - Consumer<T> : T타입을 단순하게 받는 함수 인터페이스
+      - void accept(T t);
+    - Supplier<T> : T타입을 제공하는 함수 인터페이스
+      - T get();
+    - Predicate<T> : T타입을 받아서 boolean으로 리턴하는 함수 인터페이스
+      - boolean test(T t);
+    - UnaryOperator<T> :  동일한 타입의 한개를 받아서, 같은 타입으로 리턴하는 경우 (Function <T,T>를 상속함)
+    - BinaryOperator<T>: 동일한 타입의 입력값 두개 받아서, 같은 타입으로 리턴하는 경우 (BiFunction<T,T,T> 상속)
+
 - Variable Capture
-- 메소드, 생성자 레퍼런스
+  - 람다식에서 내부의 파라미터를 제외한 외부의 변수를 참조하는 것
+  - 변수의 제약 조건
+    - 지역변수는 final 변수이어야 함
+    - 지역변수는 final 변수가 아니라면 값이 재할당 되지 않아야 함(재할당된 값을 람다식에서 사용하고 싶다면 해당 값을 다른 변수로 할당하여 처리 가능)
+    - 인스턴스 변수는 final 변수가 아니여도 가능하고 재할당이 되도 상관 없음 
+  ```java
+  public class LambdaApp {
+    
+    public void run() {
+        final String str = "this is local variable"; // final 변수
+        int num = 10; // final은 아니지만 정의 이후 재할당 되지 않는 변수
+
+        onAction(data -> {
+            System.out.println("str : " + str);
+            System.out.println("num : " + num);
+        });
+    }
+
+    public void onAction(MyListener listener) {
+        listener.listen("data");
+    }
+
+    public static void main(String[] args) {
+        LambdaApp app = new LambdaApp();
+        app.run();
+    }
+  }
+  ```
+- 메소드 레퍼런스, 생성자 레퍼런스
+  - 람다에서 조금 더 간결한 문법을 사용할 수 있는 방법으로써 기존 메소드를 람다식으로 사용하는 방법
+  ```java
+  // 함수형 인터페이스
+  @FunctionalInterface
+  public interface ButtonClickListener {
+      void onClick(String data);
+  }
+
+  public class Button {
+      // 함수형 인터페이스를 받는 메소드
+      public void click(ButtonClickListener listener) {
+          listener.onClick(data);
+      }
+  }
+
+  // 람다 형태
+  Button button = new Button();
+  button.click(data -> data.length()); // data의 메소드 사용
+  button.click(data -> System.out.println(data)); // data를 파라미터로 사용
+  button.click(data -> Integer.parseInt(data)); // 스태틱 메소드에서 data를 파라미터로 사용  
+  ```
+  ```java
+  // 메소드 레퍼런스 형태
+  Button button = new Button();
+  // Unbound Method Reference
+  button.click(String::length); 
+  // Bound Method Reference
+  button.click(System.out::println);
+  // Static Bound Method Reference
+  button.click(Integer::parseInt); 
+  ```
+  ```java
+  // 기존 람다식
+  button.click(data -> new StringBuilder(data));
+  ```
+  ```java
+  // 생성자 레퍼런스 형태
+  button.click(StringBuilder::new);
+  ```
