@@ -276,6 +276,11 @@ yum install -y java-1.8.0-openjdk-devel.x86_64
     ```bash
     $ sudo systemctl start kibana.service
     ```
+* 실행 확인하기
+    * 프로세스 실행 확인
+    ```bash
+    $ ps -ef | grep node
+    ```
 * Kibana 웹을 통해서 ES에 쿼리를 날릴 수 있는 Dev Tools가 존재
 * Elastic Stack(ElasticSearch, Logstash, Kibana)은 하나의 패키지로 버전을 같게 설치해야함
 
