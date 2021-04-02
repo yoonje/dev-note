@@ -17,7 +17,7 @@
 |the-art-of-readable-code|TO DO|
 |object|TO DO|
 |object-oriented-facts-and-misunderstandings|TO DO|
-|java/java8|TO DO|
-|java/test|TO DO|
+|java/java8|섹션6~|
+|java/test|섹션2~|
 |java/concurrency|TO DO|
 |java-by-comparison|TO DO|
