@@ -17,7 +17,7 @@ JUnit5
 - JUnit5 소개
   - 자바 개발자가 가장 많이 사용하는 테스팅 프레임워크
   - JUnit5의 구성
-    - JUnit Platform:  테스트를 실행해주는 런처 제공. TestEngine API 제공
+    - JUnit Platform: 테스트를 실행해주는 런처와 TestEngine API 제공
     - `Jupiter`: JUnit 5를 지원하는 TestEngine API 구현체
     - Vintage: JUnit 4와 3을 지원하는 TestEngine 구현체
 
@@ -302,8 +302,153 @@ JUnit5
 Mockito
 =======
 - Mockito 소개
+  - Mock: 진짜 객체와 비슷하게 동작하지만 `프로그래머가 직접 그 객체의 행동을 관리하는 가짜 객체`
+  - Mockito: Mock 객체를 쉽게 만들고 관리하고 검증할 수 있는 방법을 제공하는 프레임워크
+  - DB 사용, 외부 API, 자바 API를 등등을 사용할 때 그 외부 의존성을 각각 테스트 코드에서 정의하지 않고 동작만 예측하여 편리하게 Mock으로 정의해서 테스트에서 사용
+
 - Mockito 시작하기
+  - 2.2+ 버전의 스프링 부트 프로젝트를 만든다면 기본으로 Mockito 의존성 추가
+  - Mocking을 활용해서 테스트를 쉽게 작성하려면 알아야하는 방법
+    - Mock을 만드는 방법
+    - Mock이 어떻게 동작해야 하는지 관리하는 방법
+    - Mock의 행동을 검증하는 방법
+
 - Mock 객체 만들기
+  - Mockito.mock() 메소드로 만드는 방법
+  ```java
+  MemberService memberService = Mockio.mock(MemberService.class);
+  StudyRepository studyRepository = Mockio.mock(StudyRepository.class);
+
+  @Test
+  void createStudyServce(){
+      StudyService studyService = new StudyService(memberService, studyRepository);
+  }
+  ```
+  - @Mock 애노테이션으로 Mock 객체 만드는 방법: JUnit 5 extension으로 MockitoExtension을 사용
+  ```java
+  @ExtendWith(MockitoExtension.class)
+  class StudyServiceTest {
+
+    @Mock
+    MemberService memberService;
+
+    @Mock
+    StudyRepository studyRepository;
+
+    @Test
+    void createStudyServce(){
+      StudyService studyService = new StudyService(memberService, studyRepository);
+    }
+    
+    @Test
+    void createStudyService2(@Mock MemberService memberService2,
+                            @Mock StudyRepository studyRepository2) {
+        StudyService studyService = new StudyService(memberService, studyRepository);
+    }
+  }
+  ```
 - Mock 객체 Stubbing
+  - Stubbing: `Mock 객체의 행동을 조작하는 것을 의미`
+  - 모든 Mock 객체의 초기 상태의 특징과 해동
+    - Null을 리턴(Optional 타입은 Optional.empty 리턴)
+    - Primitive 타입은 기본 Primitive 값이 할당
+    - 콜렉션은 비어있는 콜렉션이 할당
+    - Void 메소드는 예외를 던지지 않고 아무런 일도 발생하지 않음
+- Mock 객체 조작
+  -	특정한 매개변수를 받은 경우 특정한 값을 리턴하거나 예뢰를 던지도록 만들 수 있음
+  - any()와 같은 Argument Matcher를 통해서 파라미터 처리르 할 수 있음
+  -	Void 메소드 특정 매개변수를 받거나 호출된 경우 예외를 발생 시킬 수 있음
+  -	메소드가 동일한 매개변수로 여러번 호출될 때 각기 다르게 행동하도록 조작할 수도 있음
+  ```java
+    @Mock
+    MemberService memberService;
+
+    @Mock
+    StudyRepository studyRepository;
+
+    @Test
+    void test(){
+      // == given ==
+      Member member = new Member();
+      member.setId(1);
+      member.setEmail("keesun@gmail.com");
+
+      // Stubbing
+      when(memberService.findById(1)).thenReturn(Optional.of(member));
+      // Argument Matcher 사용
+      when(memberService.findById(any())).thenReturn(Optional.of(member));
+      // 예외 발생 로직도 추가
+      when(memberService.findById(any()))
+                    .thenReturn(Optional.of(member))
+                    .thenThrow(new RuntimeException())
+                    .thenReturn(Optional.empty())
+
+      // == when ==
+      Optional<Member> member2 = memberService.findById(1L);
+
+      // == then ==
+      assertEquals("keesun@gmail.com", member2.get().getEmail());
+      assertThrows(RuntimeException.class, () -> {
+          memberService.findById(2);
+      });
+      assertEquals(Optional.empty(), memberService.findById(3));
+
+    }
+
+    @Test
+    void test2(){
+        // == given ==
+        Study study = new Study(10, "테스트");
+
+        // memberService 객체에 findById 메소드를 1L 값으로 호출하면 Optional.of(member) 객체를 리턴하도록 Stubbing
+        when(memberService.findById(1).thenReturn(Optional.of(member)));
+        // studyRepository 객체에 save 메소드를 study 객체로 호출하면 study 객체 그대로 리턴하도록 Stubbing
+        when(studyRepository.save(study)).threnReturn(study);
+
+        // == when ==
+        studyService.createNewStudy(1L, study);
+
+        // == then ==
+        assertNotNull(study.getOwner());
+        assertEquals(member, study.getOwner());
+    }
+  }
+  ```
 - Mock 객체 확인 
+  - 특정 메소드가 특정 매개변수로 몇번 호출 되었는지, 최소 한번은 호출 됐는지, 전혀 호출되지 않았는지
+    - Verifying exact number of invocations
+    ```java
+    verify(memberService, times(1)).notify(study));
+    ```
+  - 어떤 순서대로 호출했는지
+    - Verification in order
+    ```java
+    InOrder inOrder = inOrder(memberService);
+    inOrder.verify(memberService).notify(study);
+    inOrder.verify(memberService).notify(member);
+    ```
+  - 특정 시간 이내에 호출됐는지
+    - Verification with timeout
+  - 특정 시점 이후에 아무 일도 벌어지지 않았는지
+    - Finding redundant invocations
+ 
+
 - BDD 스타일 Mockito API 
+  - BDD: `애플리케이션이 어떻게 행동해야 하는지에 대한 공통된 이해를 구성하는 방법`
+  - 행동에 대한 스팩
+    - Title
+    - Narrative
+      - As a  / I want / so that
+    - Acceptance criteria
+      - Given / When / Then
+  - Mockito는 BddMockito라는 클래스를 통해 BDD 스타일의 API를 제공
+    - When -> Given
+    ```java
+    given(memberService.findById(1L)).willReturn(Optional.of(member));
+    given(studyRepository.save(study)).willReturn(study);
+    ```
+    - Verify -> Then
+    ```java
+    then(memberService).should(times(1)).notify(study);
+    then(memberService).shouldHaveNoMoreInteractions();
+    ```
