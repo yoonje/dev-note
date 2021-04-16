@@ -381,8 +381,6 @@ Optional
 
 - 옵셔널 API
   - Optional 만들기: Optional.of(), Optional.ofNullable(), Optional.empty()
-  ```java
-  ```
   - Optional에 값이 있는지 없는지 확인하기: isPresent(), isEmpty()
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
