@@ -20,4 +20,3 @@
 |java/java8|섹션6~|
 |java/test|섹션2~|
 |java/concurrency|TO DO|
-|java-coding-skills|TO DO|
