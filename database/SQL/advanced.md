@@ -20,6 +20,7 @@
     - PK: Primary Key, 각 행마다 갖는 유일한 키
     - FK: Foriegn Key, 다른 엔티티의 PK를 참조하는 키
   - 관계
+  
     ![img1 daumcdn](https://user-images.githubusercontent.com/38535571/120035961-5b759200-c03a-11eb-98ba-85ea87349936.gif)
   - 데이터 타입
     - 정수: tinyiny(), smallint(), mediumint(), int(), bigint()
