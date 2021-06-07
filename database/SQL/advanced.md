@@ -22,6 +22,7 @@
   - 관계
   
     ![img1 daumcdn](https://user-images.githubusercontent.com/38535571/120035961-5b759200-c03a-11eb-98ba-85ea87349936.gif)
+  
   - 데이터 타입
     - 정수: tinyiny(), smallint(), mediumint(), int(), bigint()
     - 실수: float(), decimal(), double()
@@ -31,10 +32,22 @@
     - 이진: binary(), tinyblob(), blob(), mediumblob(), longblob()
 
 #### 서브쿼리
-
-#### 조인 심화
-
-#### 윈도우 함수
-
-#### 정규표현식
-
+- 서브쿼리: 쿼리 안에 들어 가는 쿼리로 가상의 테이블을 하나 만드는 기능
+- FROM, WHERE 절에서 자주 사용하며 SELECT절에서 누적합을 사용할 때 주로 사용
+- 서브쿼리 예시
+  - FROM 절 서브쿼리
+  ```sql
+  SELECT daily_stats.week, AVG(daily_stats.icidents_daily)
+  FROM (
+      SELECT week, date, COUNT(incident_id) AS incidents_daily
+      FROM crimes
+      GROUP BY week, date
+      ) daily_stats
+  GROUP BY daily_stats.week
+  ```
+  - WHERE 절 서브쿼리
+  ```sql
+  SELECT *
+  FROM crimes
+  WHERE date IN (SELECT distinct date FROM crimes ORDER BY date desc LIMIT 5);
+  ```
