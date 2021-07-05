@@ -1,4 +1,4 @@
-# ElasticSearch 정리 자료
+# ELK 정리 자료
 인프런 IT인을 위한 ELK 통합로그시스템 구축과 활용 정리
 
 ### Table of Contents
