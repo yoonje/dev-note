@@ -6,5 +6,4 @@
 * [섹션1](./섹션1/section1.md)
 * [섹션2](./섹션2/section2.md)
 * [섹션3](./섹션3/section3.md)
-* [섹션5](./섹션5/section5.md)
 * [섹션6](./섹션6/section6.md)
