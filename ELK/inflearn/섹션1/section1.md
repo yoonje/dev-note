@@ -35,7 +35,7 @@
 - REST API
   - HTTP 기반으로 리소스, 메서드, 메시지로 API 정의하는 방법
   - Elasticsearch는 클러스터와 통신하는데 사용할 때 REST API 제공
--  API로 수행 할 수 있는 작업
+- API로 수행 할 수 있는 작업
   - 클러스터, 노드 및 색인 상태, 상태 및 통계 확인
   - 클러스터, 노드 및 색인 데이터 및 메타 데이터 관리
   - CRUD (Create, Read, Update, Delete) 및 인덱스에 대한 검색 작업 수행 
