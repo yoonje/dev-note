@@ -316,9 +316,9 @@
   ```
   * 키바나에서 여러가지 작업이 가능
 
-  ### Auditbeat
-  * 시스템 상의 사용자와 프로세스의 활동을 감시하는 경량 비츠
-    * Auditbeat 설정 파일
+### Auditbeat
+* 시스템 상의 사용자와 프로세스의 활동을 감시하는 경량 비츠
+  * Auditbeat 설정 파일
   ```sh
   $ vi $AUDITBEAT_HOME/auditbeat.yml
   ```
