@@ -4,6 +4,7 @@
 - 오픈 소스 서버 측 데이터 처리로 파이프 라인
 - 다양한 소스에서 동시에 데이터를 수집하고 변환한 뒤에 데스티네이션에 전달
 - input, filter, output을 yml 파일로 설정 가능
+- message, host, @version, @timestamp 등의 필드는 Logstash에 내장 되어있는 기본 필드
 
 ### 파일비트
 - 다양한 모듈(Apache, NGINX, System, MySQL 등등)을 지원하는 경량 로그 파일 수집기
