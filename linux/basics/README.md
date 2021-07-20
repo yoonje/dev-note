@@ -49,6 +49,7 @@
   - /mnt: Mount Directory
   - /media: Rmovable Device
   - /srv: Service Data
+- `$ tree {디렉토리}`: 지정한 디렉토리의 구조를 보여줌
 
 ## 파일 찾는 법
 - `$ locate {파일 이름}`: 시스템의 mlocate라는 데이터베이스를 뒤져서 파일의 위치 검색
@@ -109,5 +110,8 @@
 - `$ cat /proc/cpuinfo`: CPU 확인
 - `$ cat /proc/meminfo`: 메모리 용량 확인
 - `$ grep . /etc/issue`: OS 버전 확인
-
-
+- `$ free`: 시스템 전체의 메모리의 상태를 확인하는 명령어
+  - free 옵션
+    - -m: 메가바이트 단위로 출력
+    - -g: 기가바이트 단위로 출력
+    - -k: 킬로바이트 단위로 출력
