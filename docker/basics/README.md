@@ -25,18 +25,24 @@ Docker
 * 기능
   * 다양한 프로그램, 실행환경을 컨테이너로 추상화하고 동일한 인터페이스를 제공하여 프로그램의 배포 및 관리를 단순하게 해준다.
   * 개발환경 구축뿐만 아니라 개발 후 운영 환경에 대한 배포나 애플리케이션 플랫폼으로 사용이 가능하다.
+  * 서버 관리는 서버 환경 설정 및 개발 환경 설정이 달라지며 설치하는 애플리케이션에 따라 충돌 등의 문제로 관리가 어려워졌기 때문에 `도커`를 사용하여 서버관리 및 개발 방식을 편하게 함
 
 Container
 =======
 * `컨테이너`: 컨테이너는 격리된 공간에서 `프로세스`가 동작하는 기술
-* 가상머신(OS 가상화)과 도커(컨테이너)의 차이: 기존의 가상머신들은 0S 자체를 가상화하여 호스트 OS 위에 게스트 OS 전체를 가상화하여 사용하였으나 컨테이너는 전체 OS를 가상화하는 방식이 아니라 호스트의 자원을 직접 이용하기 때문에 가볍고 빠르다.
-* `이미지`: 컨테이너 실행에 필요한 파일과 설정값등을 포함하고 있는 것으로 상태값을 가지지 않고 변하지 않는다. 이미지는 컨테이너의 템플릿이고 컨테이너는 이미지를 실행한 상태이다. `ex) Ubuntu, MySQL, Go, Redis, Nginx....`
+* 가상머신: 도커와 같이 한 서버에 여러 개를 설치할 수 있고 서버의 상태 자체를 이미지로 그대로 활용할 수 있게 하는 기술
+* 가상머신(OS 가상화)과 도커(컨테이너)의 차이: 기존의 가상머신들은 0S 자체를 가상화하여 호스트 OS 위에 하이퍼바이저를 통해 게스트 OS 전체를 가상화하여 사용하였으나 컨테이너는 전체 OS를 가상화하는 방식이 아니라 도커 엔진이 호스트의 자원을 직접 격리하여 이용하기 때문에 가볍고 빠르다.
+* `이미지`: 컨테이너 실행에 필요한 파일과 설정값등을 포함하고 있는 것으로 상태값을 가지지 않고 변하지 않는다. Dockerfile을 이용하여 만든 이미지는 컨테이너의 템플릿이고 컨테이너는 이미지를 실행한 상태이다. `ex) Ubuntu, MySQL, Go, Redis, Nginx....`
 * `컨테이너 오케스트레이션 도구`: `Docker Compose`와 `Docker Swarm` 그리고 `Kubernetes`가 존재한다. 단일 서버의 여러 컨테이너 관리만이 목적이라면 Docker Compose를 사용하고 여러 서버에 걸쳐 있는 여러 컨테이너를 관리가 목적이라면 `Docker Swarm`와 `Kubernetes`를 사용한다.
+* 컨테이너 오케스트레이션 도구의 특징
+  - 스케줄링: 컨테이너를 `적당한 서버`에 배포해 주는 작업
+  - 클러스터링: 여러 개의 서버를 하나의 서버처럼 사용
+  - 서비스 디스커버리: 클러스터 환경에서 컨테이너는 어느 서버에 생성될지 알 수 없는데, 서비스를 찾아주는 기능
 
 Advantage
 =======
 * `레이어 저장 방식`: 유니온 파일 시스템을 이용하여 여러 개의 레이어를 하나의 파일시스템으로 사용하여 이미지 파일이 추가되거나 수정되면 새로운 레이어가 생성되고 기존의 레이어를 제외한 내용만 새로 디운로드 받기 때문에 효율적으로 이미지 관리를 할 수 있다.
-* `Dockerfile`: 자체 DSL(Domain Specific Language)언어를 이용하여 `코드 기반으로` 이미지 생성 과정을 적는 Dockerfile을 통해서 프로그램 설치 및 설정 과정을 간단하게 하고 쉽게 관리할 수 있어 복제 및 배포에서 높은 재현성을 갖고 있다.
+* `Dockerfile`: 자체 DSL(Domain Specific Language)언어를 이용하여 `코드 기반으로` 이미지 생성 과정을 적는 Dockerfile을 통해서 이미지를 만들어서 프로그램 설치 및 설정 과정을 간단하게 하고 쉽게 관리할 수 있어 복제 및 배포에서 높은 재현성을 갖고 있다.
 * `Docker Hub`: 큰 용량의 이미지를 서버에 저장하고 관리하는 것은 쉽지 않은데 도커는 Docker Hub를 통해 공개 이미지를 무료로 관리해주는 서비스를 제공한다.
 * `Command와 API`: 도커의 대부분의 명령어는 직관적이고 사용하기 쉬우며 `Docker REST API`도 지원하여 확장성이 좋다.
 * `배포 효율성`: 명령어를 통해 쉽게 프로그램을 배포 확장할 수 있고 `애플리케이션과 인프라 실행 환경`을 묶어 통째로 배포하는 방식으로 의존성 문제를 근본적으로 해결한다.
@@ -75,27 +81,28 @@ Run
 | 옵션 |설명 |
 |:--------|:--------|
 | `-d` | detached mode 흔히 말하는 백그라운드 모드 |
-| `-p` | 호스트 포트와 컨테이너 포트를 연결 (포워딩) |
-| `-v` | 호스트와 컨테이너의 디렉토리를 연결 (마운트) - 데이터 볼륨 |
+| `-p` | 호스트 포트와 컨테이너 포트를 연결 `(포워딩)` |
+| `-v` | 호스트와 컨테이너의 디렉토리를 연결 `(마운트)` - 데이터 볼륨, {호스트 디렉토리}:{컨테이너 내 디렉토리} |
 | `-e` | 컨테이너 내에서 사용할 환경변수 설정 |
 | `-name` | 컨테이너 이름 설정 |
 | `-rm` | 프로세스 종료시 컨테이너 자동 제거 |
 | `-it` | -i와 -t를 동시에 사용한 것으로 터미널 입력을 위한 옵션 |
 | `-link` | 컨테이너 연결 [컨테이너명:별칭] |
+| `--network` | 속할 네트워크 지정 |
 
 * 우분투 컨테이너 실행하기
   * 컨테이너 실행하기
   ```sh
-  $ sudo docker run ubuntu:16.04
+  $ docker run ubuntu:20.04
   ```
   * 실행 프로세스(Bash)가 전달된 컨테이너 실행
   ```sh
-  $ sudo docker run --rm -it ubuntu:16.04 /bin/bash
+  $ docker run --rm -it ubuntu:20.04 /bin/sh
   ```
 * Redis 컨테이너 실행하기
   * 컨테이너 실행하기
   ```sh
-  $ sudo docker run -d -p 1234:6379 redis
+  $ docker run -d -p 1234:6379 redis
   ```
 * MySQL 컨테이너 실행하기
   * 컨테이너 실행하기
@@ -106,10 +113,10 @@ Run
 Command
 =======
 * 컨테이너 목록 확인하기
-  * 컨테이너 확인하기
   ```sh
   $ docker ps [OPTIONS]
   ```
+  * -a 옵션은 중지, 종료된 모든 컨테이너 리스트를 보여줌
 * 컨테이너 실행하기
   ```sh
   $ docker run [OPTIONS] IMAGE[:TAG] [COMMAND] [ARG...]
@@ -130,6 +137,7 @@ Command
   ```sh
   $ docker logs [OPTIONS] CONTAINER
   ```
+  * -f 옵션을 하면 계속 대기하면서 추가적으로 보여줌
 * 구동 중인 컨테이너에 명령어 실행하기
   ```sh
   $ docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
@@ -166,6 +174,15 @@ Command
   ```sh
   $ docker image history IMAGE
   ```
+* 컨테이너끼리 통신할 수 있는 가상 네트워크 만들기
+  ```
+  $ docker network create [OPTIONS] NETWORK
+  ```
+* 가상 네트워크에 컨테이너 추가하기
+  ```
+  $ docker network connect [OPTIONS] NETWORK CONTAINER
+  ```
+
 
 Docker Compose
 =======
@@ -186,10 +203,10 @@ Docker Compose
 * docker-compose.yml 파일을 통해 Wordpress 컨테이너 만들기
   * docker-compose.yml 파일 정의
   ```yml
-  version: '2'
-  services:
-    db:
-      image: mysql:5.7
+  version: '2' # 파일 명세 버전
+  services: 
+    db: # 컨테이너 정의
+      image: mysql:5.7 # 컨테이너에 사용할 이미지 이름과 태그
       volumes:
             - db_data:/var/lib/mysql
       restart: always
@@ -198,20 +215,24 @@ Docker Compose
             MYSQL_DATABASE: wordpress
             MYSQL_USER: wordpress
             MYSQL_PASSWORD: wordpress
-    wordpress:
+    django:
+      build: # 이미지를 자체 빌드하기 위해 image 속성 대신 사용(도커 파일 필요)
+      context: .
+      dockerfile: ./compose/django/Dockerfile-dev
+    wordpress: 
       depends_on:
             - db
       image: wordpress:latest
       volumes:
             - wp_data:/var/www/html
-      ports:
+      ports: # 포트 연결 ({호스트 포트}:{컨테이너 포트})
             - "8000:80"
       restart: always
-      environment:
+      environment: # 컨테이너에서 사용할 환경변수({환경변수 이름}:{값})
             WORDPRESS_DB_HOST: db:3306
             WORDPRESS_DB_PASSWORD: wordpress
-  volumes:
-    db_data:
+  volumes: # 마운트 하려는 디렉토리 ({호스트 디렉터리}:{컨테이너 디렉터리})
+    db_data: 
     wp_data:
   ```
   * 실행하기
@@ -234,67 +255,6 @@ Docker Compose
 Making Image
 =======
 * 도커 이미지 만들기: 도커는 가상머신의 스냅샷과 같은 방식으로 애플리케이션을 설치하고 그 상태로 이미지를 저장한다.
-* Sinatra 애플리케이션 `Dockerizing`
-  * Ruby 패키지 파일 생성
-  ```sh
-  $ vi Gemfile
-  ```
-  ```yml
-  source 'https://rubygems.org'
-  gem 'sinatra'
-  ```
-  * Ruby 소스 파일 생성
-  ```sh
-  $ vi arr.rb
-  ```
-  ```ruby
-  require 'sinatra'
-  require 'socket'
-  get '/' do
-    Socket.gethostname
-  end
-  ```
-  * Dockerfile(빌드 파일) 생성
-  ```yml
-  # 1. ubuntu 설치 (패키지 업데이트 + 만든사람 표시)
-  FROM       ubuntu:16.04
-  MAINTAINER subicura@subicura.com
-  RUN        apt-get -y update
-
-  # 2. ruby 설치
-  RUN apt-get -y install ruby
-  RUN gem install bundler
-
-  # 3. 소스 복사
-  COPY . /usr/src/app
-
-  # 4. Gem 패키지 설치 (실행 디렉토리 설정)
-  WORKDIR /usr/src/app
-  RUN     bundle install
-
-  # 5. Sinatra 서버 실행 (Listen 포트 정의)
-  EXPOSE 4567
-  CMD    bundle exec ruby app.rb -o 0.0.0.0
-  ```
-  또는
-  ```yml
-  FROM ruby:2.3
-  MAINTAINER subicura@subicura.com
-  COPY Gemfile* /usr/src/app/
-  WORKDIR /usr/src/app
-  RUN bundle install --no-rdoc --no-ri
-  COPY . /usr/src/app
-  EXPOSE 4567
-  CMD bundle exec ruby app.rb -o 0.0.0.0
-  ```
-  * 이미지 빌드하기
-  ```sh
-  $ docker build -t app .
-  ```
-  * 이미지 확인하기
-  ```sh
-  $ docker images
-  ```
 * Dockerfile 기본 명령어
   * FROM: 베이스 이미지(운영체제)를 정의
   ```yml
@@ -361,12 +321,105 @@ Making Image
   ```yml
   VOLUME ["/data"]
   ``` 
-  * ENV: 컨테이너에서 사용할 환경변수를 지정는
+  * ENV: 컨테이너에서 사용할 환경변수를 지정
   ENV <key> <value>
   ENV <key>=<value> ...
   ```yml
   ENV DB_URL mysql
   ``` 
+  * ENTRYPOINT: 컨테이너 기본 실행 명령어
+  * USER: RUN, CMD, ENTRYPOINT를 실행하는 사용자
+  * WORKDIR: 작업 디렉토리 설정
+  * ARGS: 빌드타임 환경변수 설정
+  * LABEL: key - value 데이터
+  * ONBUILD: 다른 빌드의 베이스로 사용될때 사용하는 명령어
+* 깃을 설치한 우분투 이미지 만들기
+  * 우분투 컨테이너 실행
+  ```sh
+  $ docker run -it --name git ubuntu:latest bash
+  ```
+  * 컨테이너 내에서 깃 설치
+  ```sh
+  $ apt-get update
+  $ apt-get install -y git
+  $ git --version
+  ```
+  * 이미지 빌드하기(커밋)
+  ```sh
+  $ docker commit git ubuntu:git
+  ```
+* 깃을 설치한 우분투 이미지 만들기 방법2
+  * 도커 파일 만들기
+  ```yml
+  FROM ubuntu:latest
+  RUN apt-get update
+  RUN apt-get install -y git
+  ```
+  * 
+  ```sh
+  $ docker build -t ubuntu:git-dockerfile .
+  ```
+* Sinatra 애플리케이션 `Dockerizing`
+  * Ruby 패키지 파일 생성
+  ```sh
+  $ vi Gemfile
+  ```
+  ```yml
+  source 'https://rubygems.org'
+  gem 'sinatra'
+  ```
+  * Ruby 소스 파일 생성
+  ```sh
+  $ vi arr.rb
+  ```
+  ```ruby
+  require 'sinatra'
+  require 'socket'
+  get '/' do
+    Socket.gethostname
+  end
+  ```
+  * Dockerfile(빌드 파일) 생성
+  ```yml
+  # 1. ubuntu 설치 (패키지 업데이트 + 만든사람 표시)
+  FROM       ubuntu:16.04
+  MAINTAINER subicura@subicura.com
+  RUN        apt-get -y update
+
+  # 2. ruby 설치
+  RUN apt-get -y install ruby
+  RUN gem install bundler
+
+  # 3. 소스 복사
+  COPY . /usr/src/app
+
+  # 4. Gem 패키지 설치 (실행 디렉토리 설정)
+  WORKDIR /usr/src/app
+  RUN     bundle install
+
+  # 5. Sinatra 서버 실행 (Listen 포트 정의)
+  EXPOSE 4567
+  CMD    bundle exec ruby app.rb -o 0.0.0.0
+  ```
+  또는
+  ```yml
+  FROM ruby:2.3
+  MAINTAINER subicura@subicura.com
+  COPY Gemfile* /usr/src/app/
+  WORKDIR /usr/src/app
+  RUN bundle install --no-rdoc --no-ri
+  COPY . /usr/src/app
+  EXPOSE 4567
+  CMD bundle exec ruby app.rb -o 0.0.0.0
+  ```
+  * 이미지 빌드하기
+  ```sh
+  $ docker build -t app .
+  ```
+  * 이미지 확인하기
+  ```sh
+  $ docker images
+  ```
 
 Docker Hub
 =======
