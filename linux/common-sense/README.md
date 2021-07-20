@@ -2,7 +2,6 @@
 
 ### Table of Contents
 <!--ts-->
-  * [Permission](#Permission)
   * [RAID](#RAID)
   * [Systemd](#Systemd)
   * [FQDN](#FQDN) 
@@ -14,19 +13,6 @@
   * [Linux Directory](#Linux-Directory)
   * [IP](#IP)
 <!--te-->
-
-### Permission
-* 파일 별로 접근 권한을 줄 수 있는데 10개의 알파벳으로 구성
-  * r : 4 (2진수로 100) read
-  * w : 2 (2진수로 10) write
-  * x : 1 (2진수로 1) execute
-  
-  ex) drwxr-xr-x -> 755, -rw-r--r-- -> 644
-
-|파일의 종류|파일의 User|파일의 Group|관계없는자들(Other)|
-|:--------|:-------------|:----------|:----------|
-|d        |rwx           |r-x        |r-x        |
-|디렉토리   |읽기/쓰기/실행 가능|읽기/실행 가능|읽기/실행 가능|
 
 
 ### RAID
@@ -464,12 +450,12 @@ net.ipv6.conf.default.disable_ipv6 = 1
     1. COMMAND: 실행된 명령어
 
 ### free
-* free: 시스템 전체의 메모리의 상태를 확인하는 명력어
+* free: 시스템 전체의 메모리의 상태를 확인하는 명령어
 * free 옵션
   * -m: 메가바이트 단위로 출력
   * -g: 기가바이트 단위로 출력
   * -k: 킬로바이트 단위로 출력
-* free 플래
+* free 플래그
   * total: 설치된 총 메모리 크기 / 설정된 스왑 총 크기
   * used: total에서 free, buff/cache를 뺀 사용중인 메모리. / 사용중인 스왑 크기
   * free: total에서 used와 buff/cahce를 뺀 실제 사용 가능한 여유 있는 메모리량 / 사용되지 않은 스왑 크기
