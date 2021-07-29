@@ -566,20 +566,392 @@ Deployment
 
 Service
 =======
-- Service: Pod은 자체 IP를 가지고 다른 Pod과 통신할 수 있지만, 쉽게 사라지고 생성되는 특징 때문에 직접 통신하는 방법은 권장되지 않아서 k8s는 Pod과 직접 통신하는 방법 대신, 별도의 고정된 IP를 가진 서비스를 만들고 그 서비스를 통해 Pod에 접근하는 방식 사용
-- 
+- `ClusterIP(Service)`: Pod은 자체 IP를 가지고 다른 Pod과 통신할 수 있지만, 쉽게 사라지고 생성되는 특징 때문에 직접 통신하는 방법은 권장되지 않아서 k8s는 Pod과 직접 통신하는 방법 대신에 `별도의 고정된 IP를 가진 서비스를 만들고 그 서비스를 통해 Pod 안에서 다른 Pod들과 접근하는 방식 사용`
+- ClusterIP(Service) 만들기
+  - 설정 파일(counter-redis-svc.yml, counter-app.yml)
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: redis
+  spec:
+    selector:
+      matchLabels:
+        app: counter
+        tier: db
+    template:
+      metadata:
+        labels:
+          app: counter
+          tier: db
+      spec:
+        containers:
+          - name: redis
+            image: redis
+            ports:
+              - containerPort: 6379
+                protocol: TCP
+
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: redis
+  spec:
+    ports:
+      - port: 6379 # 서비스가 생성할 Port
+        targetPort: 6379 # 서비스가 접근할 Pod의 Port
+        protocol: TCP
+    selector: # 서비스가 접근할 Pod의 label 조건
+      app: counter
+      tier: db
+  ```
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: counter
+  spec:
+    selector:
+      matchLabels:
+        app: counter
+        tier: app
+    template:
+      metadata:
+        labels:
+          app: counter
+          tier: app
+      spec:
+        containers:
+          - name: counter
+            image: ghcr.io/subicura/counter:latest
+            env:
+              - name: REDIS_HOST
+                value: "redis"
+              - name: REDIS_PORT
+                value: "6379"
+  ```
+  - 서비스 생성 및 실행: `$ kubectl apply -f counter-redis-svc.yml`
+  - counter app Deployment 생성 및 실행: `$ kubectl apply -f counter-app.yml`
+  - Pod, ReplicaSet, Deployment, Service 상태 확인: `$ kubectl get all`
+  - counter app에 접근: `$ kubectl exec -it counter-<xxxxx> -- sh`
+  - counter app Pod에서 redis Pod으로 접근이 되는지 테스트
+- Service(ClusterIP) 생성 흐름
+  - Endpoint Controller는 Service와 Pod을 감시하면서 조건에 맞는 Pod의 IP를 수집
+  - Endpoint Controller가 수집한 IP를 가지고 Endpoint 생성
+  - Kube-Proxy는 Endpoint 변화를 감시하고 노드의 iptables을 설정
+  - CoreDNS는 Service를 감시하고 서비스 이름과 IP를 CoreDNS에 추가
+- `NodePort(Service)`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부(노드)에서 접근할 수 있도록 NodePort 서비스가 존재
+- NodePort(Service) 만들기
+  - ClusterIP(Service) 및 앱 실행
+    - `$ kubectl apply -f counter-redis-svc.yml`
+    - `$ kubectl apply -f counter-app.yml`
+  - 설정 파일
+  ```yml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: counter-np
+  spec:
+    type: NodePort # 서비스의 타입 NodePort으로 지정
+    ports:
+      - port: 3000
+        protocol: TCP
+        nodePort: 31000 # 노드에 오픈할 Port
+    selector: # 서비스가 접근할 Pod의 label 조건
+      app: counter
+      tier: app
+  ```
+  - 서비스 생성 및 실행: `$ kubectl apply -f counter-nodeport.yml`
+  - 서비스 상태 확인: `$ kubectl get svc`
+- Service(LoadBalancer): NodePort의 단점은 노드가 사라졌을 때 자동으로 다른 노드를 통해 접근이 불가능하므로 자동으로 살아 있는 노드에 접근하기 위해 모든 노드를 바라보는 Load Balancer를 사용하여 NodePort에 직접 요청을 보내는 것이 아니라 Load Balancer에 위임하여 Pod에 접근
+- Service(LoadBalancer) 만들기
+  - ClusterIP(Service) 및 앱 실행
+    - `$ kubectl apply -f counter-redis-svc.yml`
+    - `$ kubectl apply -f counter-app.yml`
+  - 설정 파일(counter-lb.yml)
+  ```yml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: counter-lb
+  spec:
+    type: LoadBalancer
+    ports:
+      - port: 30000
+        targetPort: 3000
+        protocol: TCP
+    selector:
+      app: counter
+      tier: app
+  ```
+  - 서비스 생성 및 실행: `$ kubectl apply -f counter-lb.yml`
+
 
 Ingress
 =======
+- Ingress: 하나의 클러스터에서 여러 가지 서비스를 운영한다면 외부 연결을 할 때 NodePort를 이용하면 서비스 개수만큼 포트를 오픈하고 사용자에게 어떤 포트인지 알려줘야하므로 Ingress를 통해서 포트를 하나만 Open하고 도메인이나 경로를 통해서 서비스를 분기
+- Ingress 만들기
+  - 설정 파일(echo-v1.yml, echo-v2.yml)
+  ```yml
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: echo-v1
+  spec:
+    rules:
+      - host: v1.echo.{쿠버네티스 주소}.sslip.io # 도메인
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: echo-v1 # 서비스 지정
+                  port:
+                    number: 3000
+
+  ---
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: echo-v1
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: echo
+        tier: app
+        version: v1
+    template:
+      metadata:
+        labels:
+          app: echo
+          tier: app
+          version: v1
+      spec:
+        containers:
+          - name: echo 
+            image: ghcr.io/subicura/echo:v1
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 3000
+
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: echo-v1
+  spec:
+    ports:
+      - port: 3000
+        protocol: TCP
+    selector:
+      app: echo
+      tier: app
+      version: v1
+  ```
+  ```yml
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: echo-v2
+  spec:
+    rules:
+      - host: v2.echo.{쿠버네티스 주소}.sslip.io # 도메인 지정
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: echo-v2 # 서비스 지정
+                  port:
+                    number: 3000
+
+  ---
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: echo-v2
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: echo
+        tier: app
+        version: v2
+    template:
+      metadata:
+        labels:
+          app: echo
+          tier: app
+          version: v2
+      spec:
+        containers:
+          - name: echo
+            image: ghcr.io/subicura/echo:v2
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 3000
+
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: echo-v2
+  spec:
+    ports:
+      - port: 3000
+        protocol: TCP
+    selector:
+      app: echo
+      tier: app
+      version: v2
+  ```
+  - Ingree 생성 및 실행: `$ kubectl apply -f echo-v1.yml,echo-v2.yml`
+- Ingree 생성 흐름
+  - Ingress Controller는 Ingress 변화를 체크
+  - Ingress Controller는 변경된 내용을 Nginx에 설정하고 프로세스 재시작
+
 
 
 Volume
 =======
-
+- Volume: 컨테이너는 Pod을 제거하면 컨테이너 내부에 저장했던 데이터도 모두 사라지므로 별도의 저장소에 데이터를 저장하고 컨테이너를 새로 만들 때 이전 데이터를 가져와야해서 Volume을 이용하여 컨테이너의 디렉토리를 다른 저장소와 연결
+- 가상 디렉토리를 통한 Volume 만들기
+  - 설정 파일(empty-dir.yml)
+  ```yml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: sidecar
+  spec:
+    containers:
+      - name: app # 컨테이너 1
+        image: busybox
+        args:
+          - /bin/sh
+          - -c
+          - >
+            while true;
+            do
+              echo "$(date)\n" >> /var/log/example.log;
+              sleep 1;
+            done
+        volumeMounts:
+          - name: varlog
+            mountPath: /var/log
+      - name: sidecar # 컨테이너 2
+        image: busybox
+        args: [/bin/sh, -c, "tail -f /var/log/example.log"]
+        volumeMounts: # 볼륨 마운트
+          - name: varlog
+            mountPath: /var/log # 컨테이너들이 공유하는 가상의 경로
+    volumes:
+      - name: varlog
+        emptyDir: {}
+  ```
+  - Volume 생성 및 실행: `$ kubectl apply -f empty-dir.yml`
+- hostpath Volume 만들기
+  - 설정 파일(hostpath.yml)
+  ```yml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: host-log
+  spec:
+    containers:
+      - name: log
+        image: busybox
+        args: ["/bin/sh", "-c", "sleep infinity"]
+        volumeMounts:
+          - name: varlog
+            mountPath: /host/var/log
+    volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+  ```
+  - Volume 생성 및 실행: `$ kubectl apply -f hostpath.yml`
+  - 컨테이너 접속: `$ kubectl exec -it host-log -- sh`
+  - (접속된 상태에서) /host/var/log 디렉토리를 확인: `$ ls -al /host/var/log`
 
 ConfigMap
 =======
+- ConfigMap: 쿠버네티스에서 설정 파일과 환경 변수 관리하는 오브젝트
+- ConfigMap 만들기1 - 설정 파일 자체를 마운트 하기
+  - 설정 파일(config-file.yml, alphine.yml)
+  ```yml
+  global:
+    scrape_interval: 15s
 
+  scrape_configs:
+    - job_name: prometheus
+      metrics_path: /prometheus/metrics
+      static_configs:
+        - targets:
+            - localhost:9090
+  ```
+  ```yml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: alpine
+  spec:
+    containers:
+      - name: alpine
+        image: alpine
+        command: ["sleep"]
+        args: ["100000"]
+        volumeMounts:
+          - name: config-vol # 볼륨 이룸
+            mountPath: /etc/config
+    volumes:
+      - name: config-vol
+        configMap: # ConfigMap으로부터 볼륨 생성
+          name: my-config # ConfigMap 이름
+  ```
+  - ConfigMap 생성: `$ kubectl create cm my-config --from-file=config-file.yml`
+  - ConfigMap을 적용할 Pod 실행: `$ kubectl apply -f alphine.yml`
+  - Pod 접속 후 설정 파일 확인: `$ kubectl exec -it alpine -- cat /etc/config/config-file.yml`
 
-Secret
-=======
+- ConfigMap 만들기2 - ConfigMap 내용을 마운트 하기
+  - 설정 파일(config-map.yml, alphine.yml)
+  ```yml
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: my-config
+  data:
+    hello: world
+    kuber: netes
+    multiline: |-
+      first
+      second
+      third
+  ```
+  ```yml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: alpine
+  spec:
+    containers:
+      - name: alpine
+        image: alpine
+        command: ["sleep"]
+        args: ["100000"]
+        volumeMounts:
+          - name: config-vol # 볼륨 이룸
+            mountPath: /etc/config
+    volumes:
+      - name: config-vol
+        configMap: # ConfigMap으로부터 볼륨 생성
+          name: my-config
+  ```
+  - ConfigMap 생성: `$ kubectl apply -f config-map.yml`
+  - ConfigMap을 적용할 Pod 실행: `$ kubectl apply -f alphine.yml`
+  - Pod 접속 후 적용 내용 확인: `$ kubectl exec -it alpine -- cat /etc/config/multiline`
