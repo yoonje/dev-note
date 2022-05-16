@@ -15,12 +15,13 @@ Table of contents
 함수형 인터페이스와 람다 표현식 소개
 =======
 - 함수형 인터페이스(Functional Interface)
-  - `추상 메소드`를 딱 하나만 가지고 있는 인터페이스
+  - `추상 메소드를 딱 하나`만 가지고 있는 인터페이스
   - @FuncationInterface 애노테이션을 가지고 있는 인터페이스
   > 인터페이스 안에 static 메소드와 default 메소드 기능을 통해 메소드를 `정의` 할 수 있음
 
 - 람다 표현식(Lambda Expressions)
-  - 람다 표현식을 통해 함수형 인터페이스의 인스턴스를 만드는 방법으로 쓰일 수 있음
+  - 함수형 인터페이스를 구현하는 가장 간단한 방법으로 클래스 선언 없이 함수형 인터페이스를 구현
+  - 람다 표현식을 통해 함수형 인터페이스의 `인스턴스를 만드는 방법`으로 쓰일 수 있음
   - 기존 익명 클래스를 통한 함수형 인터페이스 구현
   ```java
   RunSomething runSomething = new RunSomething() {
@@ -47,9 +48,8 @@ Table of contents
     - 함수가 함수를 매개변수로 받을 수 있고 함수를 리턴할 수도 있음
   - 불변성
 
-- Java가 기본으로 제공하는 함수형 인터페이스
-  - java.util.function 패키지
-  - Function<T, R>: T 타입을 받아서 R 타입을 리턴하는 함수 인터페이스
+- Java가 기본으로 제공하는 함수형 인터페이스: java.util.function 패키지
+  - Function<T, R>: T 타입을 받아서 R 타입을 리턴하는 함수 인터페이스, apply 메소드를 가짐
   ```java
   public class Plus10 implements Function<Integer, Integer>{
       @Override
@@ -84,20 +84,20 @@ Table of contents
     ```
 
   - BiFunction<T, U, R>: 두 개의 값(T, U)를 받아서 R 타입을 리턴하는 함수 인터페이스
-  - Consumer<T>: T 타입을 받아서 아무값도 리턴하지 않는 함수 인터페이스
+  - Consumer<T>: T 타입을 받아서 아무 값도 리턴하지 않는 함수 인터페이스, accept 메소드를 가짐
   ```java
   Consumer<Integer> printT = (i) -> System.out.println(i);
   printT.accpet(10); // 10
   ```
-  - Supplier<T>: T 타입의 값을 제공하는 함수 인터페이스
+  - Supplier<T>: T 타입의 값을 제공하는 함수 인터페이스, get 메소드를 가짐
   ```java
   Supplier<Integer> get10 = () -> 10;
   System.out.println(get10.get()); // 10
   ```
-  - Predicate<T>: T 타입을 받아서 boolean을 리턴하는 함수 인터페이스
+  - Predicate<T>: T 타입을 받아서 boolean을 리턴하는 함수 인터페이스, test 메소드를 가짐
   ```java
   Predicate<String> startWithKeesun = (s) -> s.startsWith("keesun");
-  Predicate<Integer> isEven = (i) -> i%2 == 0;
+  Predicate<Integer> isEven = (i) -> i % 2 == 0;
   System.out.println(startWithKeesun.test("keesun2"));
   System.out.println(isEven.test(2));
   ```
@@ -140,7 +140,7 @@ Table of contents
   - 변수 캡쳐
     - 로컬 변수 캡처
       - `final이거나 effective final인` 경우에만 참조할 수 있음
-    - effective final(final 키워드 사용하지 않은 변수)
+    - effective final: final 키워드 사용하지 않은 변수
       - 자바 8부터 지원하는 기능으로 변경이 가해지지 않아서 사실상 final인 변수
       - final 키워드 사용하지 않은 변수를 익명 클래스 구현체 또는 람다에서 참조할 수 있음
     - 익명 클래스 구현체와 달리 `쉐도윙`하지 않음
@@ -165,30 +165,35 @@ Table of contents
       printInt.accept(12);
       ```
 - 메소드 레퍼런스
-  - 람다 표현식이 단 하나의 메소드만을 호출하는 경우에 해당 람다 표현식에서 불필요한 매개변수를 제거하고 사용이 가능
-  - 메소드를 참조하는 방법
+  - 람다 표현식이 `단 하나의 메소드`만을 호출하는 경우에 해당 람다 표현식에서 불필요한 매개변수를 제거하고 사용이 가능
+  - 메소드를 참조하는 방법: `::` 오퍼레이터 사용
 
-  |스태틱 메소드 참조|타입::스태틱 메소드|
-  |특정 객체의 인스턴스 메소드 참조|객체 레퍼런스::인스턴스 메소드|
-  |임의 객체의 인스턴스 메소드 참조|타입::인스턴스 메소드|
-  |생성자 참조|타입::new|
+  |메서드 레퍼런스 4가지 케이스|방법|
+  |---|---|
+  |`스태틱 메소드` 참조|클래스 이름::스태틱 메소드|
+  |선언된 객체의 `인스턴스 메소드` 참조|객체 레퍼런스::인스턴스 메소드|
+  |객체의 `인스턴스 메소드` 참조|클래스 이름::인스턴스 메소드|
+  |`생성자` 참조|클래스 이름::new|
 
   - 메소드 또는 생성자의 매개변수로 람다의 입력값을 받음
   - 리턴값 또는 생성한 객체는 람다의 리턴값
   ```java
   // 스태틱 메소드 참조
-  Greeting greeting = new Greeting();
-  UnaryOperator<String> hello = greeting::hello;
-  System.out.println(hello.apply("keesun"));
+  Function<String, Integer> str2int = Integer::parseInt;
+  System.out.println(str2int.apply("20")); // Function - apply
+
+  // 선언된 객체 안의 인스턴스 메소드
+  String str = "hello";
+  Predicat<String> equalsToHello = str::equals;
+  System.out.println(equalsToHello.test("hello")); // Predicat - test
+
+  // 객체의 인스턴스 메소드 참조
+  Function<String, Integer> strLength = String::length;
+  int length = strLength.apply("Hello World"); // Function - apply
 
   // 생성자 참조
   Supplier<Greeting> newGreeting = Greeting::new;
-  newGreeting.get();
-
-  // 특정 객체의 인스턴스 메소드 참조
-  Function<String, Greeting> keesunGreeting = Greeting::new;
-  Greeting keesun = keesunGreeting.apply("keesun");
-  System.out.println(keesun.getName());
+  newGreeting.get(); // Supplier - get
   ```
 
 인터페이스의 변화
