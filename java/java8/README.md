@@ -184,8 +184,8 @@ Table of contents
 
   // 선언된 객체 안의 인스턴스 메소드
   String str = "hello";
-  Predicat<String> equalsToHello = str::equals;
-  System.out.println(equalsToHello.test("hello")); // Predicat - test
+  Predicate<String> equalsToHello = str::equals;
+  System.out.println(equalsToHello.test("hello")); // Predicate - test
 
   // 객체의 인스턴스 메소드 참조
   Function<String, Integer> strLength = String::length;
