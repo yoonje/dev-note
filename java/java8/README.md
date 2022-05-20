@@ -420,7 +420,7 @@ Optional
   
   Onlineclass onlineClasses = optional.orElseGet(App::createNweClass);
   ```
-  - Optional에 값이 있으면 가졍고 없는 경우 에러를 던지기: orElseThrow()
+  - Optional에 값이 있으면 가져오고 없는 경우 에러를 던지기: orElseThrow()
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
