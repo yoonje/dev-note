@@ -385,7 +385,10 @@ Optional
   ```
 
 - 옵셔널 API
-  - Optional 만들기: Optional.of(), Optional.ofNullable(), Optional.empty()
+  - Optional 만들기
+    - Optional.of(): 반드시 값이 있어야 하는 경우애 Optional 객체를 만들 때 사용
+    - Optional.ofNullable(): 값이 null 일수도 있는 경우에 Optional 객체를 만들 때 사용
+    - Optional.empty(): 비어있는 Optional 객체를 만들 때 사용
   - Optional에 값이 있는지 없는지 확인하기: isPresent(), isEmpty()
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
@@ -445,14 +448,13 @@ Optional
               .findFirst();
   
   Optional<Onlineclass> onlineClasses = optional.map(OnlineClass::getId);
-  System.out.println(integer.ispRresent());
   ```
 
 Date와 Time
 =======
 - Date와 Time
   - java.util 시간 라이브러리의 문제점
-    - `mutable 하기 때문에 thead safe하지 않음`
+    - `mutable 하기 때문에 thread safe하지 않음`
     - `타입 안정성이 없음`
     - 클래스 이름이 명확하지 않음
   - Java8 부터는 java.time 시간 라이브러리를 사용
