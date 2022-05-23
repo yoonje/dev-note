@@ -309,7 +309,7 @@ Stream
   - filter, map, limit, skip, sorted, ...
 - 종료 오퍼레이션
   - 스트림을 리턴하지 않고 결과를 리턴
-  - collect, allMatch, count, forEach, min, max, findFirst, findAny ...
+  - collect, allMatch, count, forEach, min, max, findFirst, findAny, ...
 
 - 스트림 API
   - 걸러내기: `Filter(Predicate)`
@@ -395,20 +395,23 @@ Stream
         new Fruit("3", "mango"), new Fruit("4", "kiwi"),
         new Fruit("5", "peach"), new Fruit("6", "cherry"),
         new Fruit("7", "lemon"));
+  
+  // Map 만들기
   Map<String, String> map = fruits.collect(Collectors.toMap(Fruit::getId, Fruit::getName));
   ```
+  
   - 연산을 계속 수행해 결과물을 하나로 합쳐 Optional로 리턴: reduce(identity, BiFunction)
   ```java
-  Stream<Integer> numbers = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-  Optional<Integer> sum = numbers.reduce((x, y) -> x + y);
-  sum.ifPresent(s -> System.out.println("sum: " + s));
+	Stream<Integer> numbers = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+	Optional<Integer> sum = numbers.reduce((x, y) -> x + y);
+	sum.ifPresent(System.out::println);
   ```
   
-  - 최대 최소 구하기: min(Comparator), max(Comparator)
+  - 최대 최소 구하여 Optional로 리턴: min(Comparator), max(Comparator)
   ```java
   List<String> langs = Arrays.asList("java", "kotlin", "haskell", "ruby", "javascript");
-  final Comparator<String> comp1 = (s1, s2) -> s1.compareToIgnoreCase(s2);
-  Optional<String> lastOne = langs.stream().max(comp1);
+  final Comparator<String> comparator = (s1, s2) -> s1.compareToIgnoreCase(s2);
+  Optional<String> lastOne = langs.stream().max(comparator);
   ```
   ```java
   List<String> langs = Arrays.asList("java", "kotlin", "haskell", "ruby", "javascript");
