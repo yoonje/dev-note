@@ -340,7 +340,7 @@ Stream
           .forEach(System.out::println);
   ```
   
-  - 생성하기: generate(Supplier) 또는 Iterate(T seed, UnaryOperator) 또는 of() / 컬렉션인 경우 `stream()`
+  - 생성하기: generate(Supplier), Iterate(T seed, UnaryOperator), of() / 컬렉션인 경우 `stream()`
   ```java
   Stream<String> stream = Stream.of("code", "chacha", "blog", "example");
   stream.forEach(s -> System.out.println(s));
@@ -360,7 +360,7 @@ Stream
   boolean result = springClasses.stream().anyMatch(oc -> oc.getTitle().contains("Test"));
   System.out.println(result);
   ```
-  - 정렬 하기: sorted(Comparator)
+  - 정렬하기: sorted(Comparator)
   ```java
   List<Integer> numbers = Arrays.asList(3, -5, 7, 4);
   List<Integer> sortedNumbers = numbers.stream()
