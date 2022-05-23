@@ -285,6 +285,7 @@ Stream
   - 데이터를 담고 있는 저장소가 아니며 `연속된 데이터를 처리하는 연산들의 모음`
   - 스트림이 처리하는 `데이터 소스를 변경하지 않음`
   - 처리하는 데이터는 오직 한번만 처리
+  - 컬렉션 형태로 구성된 데이터를 람다를 활용하여 간결하게 처리하게 해주어 반복문을 대체할 수 있음
   - 중개 오퍼레이션은 근본적으로 lazy하며 `손쉽게 병렬 처리가 가능함`
   ```java
   List<String> name = new ArrayList<>();
@@ -307,11 +308,11 @@ Stream
   - 스트림을 리턴
   - filter, map, limit, skip, sorted, ...
 - 종료 오퍼레이션
-  - 스트림을 리턴하지 않음
-  - collect, allMatch, count, forEach, min, max 등등
+  - 스트림을 리턴하지 않고 결과를 리턴
+  - collect, allMatch, count, forEach, min, max, findFirst, findAny ...
 
 - 스트림 API
-  - 걸러내기: Filter(Predicate)
+  - 걸러내기: `Filter(Predicate)`
   ```java
   List<OnlineClass> springClasses = new ArrayList<>();
   springClasses.add(new OnlineClass(1, "spring boot", true));
@@ -320,25 +321,31 @@ Stream
   springClasses.add(new OnlineClass(4, "spring rest api", true));
   springClasses.add(new OnlineClass(5, "spring test", true));
 
-  // spring으로 시작하는 수업
+  // spring으로 시작하는 수업 출력
   springClasses.stream()
           .filter(oc -> oc.getTitle().startsWith("spring"))
           .forEach(oc -> System.out.println(oc.getId()));
       
-  // close 되지 않은 수업
+  // close 되지 않은 수업 출력
   springClasses.stream()
           .filter(oc -> !oc.isClosed())
           .forEach(oc -> System.out.println(oc.getId()));
   ```
   
-  - 변경하기: Map(Function) 또는 FlatMap(Function)
+  - 변경하기: `Map(Function)` 또는 FlatMap(Function)
   ```java
   // 수업 이름만 모아서 스트림 만들기
   springClasses.stream()
           .map(oc -> oc.getTitle())
           .forEach(System.out::println);
   ```
-  - 생성하기: generate(Supplier) 또는 Iterate(T seed, UnaryOperator) 
+  
+  - 생성하기: generate(Supplier) 또는 Iterate(T seed, UnaryOperator) 또는 of() / 컬렉션인 경우 `stream()`
+  ```java
+  Stream<String> stream = Stream.of("code", "chacha", "blog", "example");
+  stream.forEach(s -> System.out.println(s));
+  ```
+  
   - 제한하기: limit(long) 또는 skip(long)
   ```java
   // 10부터 1씩 증가하는 무제한 숫자 스트림 중에서 앞에 10개 빼고 최대 10개 까지만
@@ -347,16 +354,26 @@ Stream
       .limit(10)
       .forEach(System.out::println);
   ```
-
   - 스트림에 있는 데이터가 특정 조건을 만족하는지 확인: anyMatch(), allMatch(), nonMatch()
   ```java
   // 스프링 수업 중에 Test가 들어 있는 수업이 있는지 확인
   boolean result = springClasses.stream().anyMatch(oc -> oc.getTitle().contains("Test"));
   System.out.println(result);
   ```
-
-  - 개수 세기: count()
-  - 스트림을 데이터 하나로 뭉치기: reduce(identity, BiFunction), collect(), sum(), max()
+  - 정렬 하기: sorted(Comparator)
+  ```java
+  List<Integer> numbers = Arrays.asList(3, -5, 7, 4);
+  List<Integer> sortedNumbers = numbers.stream()
+                                .sorted()
+                                .collect(Collectors.toList());
+  ```
+  ```java
+  List<User> users = Arrays.asList(user1, user2, user3, user4);
+  List<User> sortedUsers = users.stream()
+                            .sorted((u1, u2) -> u1.getName().comareTo(u2.getName()))
+                            .collect(Collectors.toList());
+  ```  
+  - 스트림을 원하는 자료형으로 변환: `collect()`
   ```java
   // 스프링 수업 중에 제목에 spring이 들어간 제목만 모아서 List 만들기
   List<String> spring = springClasses.stream()
@@ -365,8 +382,47 @@ Stream
                 .collect(Collectors.toList());
   spring.forEach(System.out::println);
   ```
-
-
+  ```java
+  // 스프링 수업 중에 제목에 test 들어간 제목만 모아서 Set 만들기
+  Set<String> spring = springClasses.stream()
+                .filter(oc -> oc.getTitle().contains("test"))
+                .map(OnlineClass::getTitle)
+                .collect(Collectors.toSet());
+  spring.forEach(System.out::println);
+  ```
+  ```java
+  Stream<Fruit> fruits = Stream.of(new Fruit("1", "banana"), new Fruit("2", "apple"),
+        new Fruit("3", "mango"), new Fruit("4", "kiwi"),
+        new Fruit("5", "peach"), new Fruit("6", "cherry"),
+        new Fruit("7", "lemon"));
+  Map<String, String> map = fruits.collect(Collectors.toMap(Fruit::getId, Fruit::getName));
+  ```
+  - 연산을 계속 수행해 결과물을 하나로 합쳐 Optional로 리턴: reduce(identity, BiFunction)
+  ```java
+  Stream<Integer> numbers = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+  Optional<Integer> sum = numbers.reduce((x, y) -> x + y);
+  sum.ifPresent(s -> System.out.println("sum: " + s));
+  ```
+  
+  - 최대 최소 구하기: min(Comparator), max(Comparator)
+  ```java
+  List<String> langs = Arrays.asList("java", "kotlin", "haskell", "ruby", "javascript");
+  final Comparator<String> comp1 = (s1, s2) -> s1.compareToIgnoreCase(s2);
+  Optional<String> lastOne = langs.stream().max(comp1);
+  ```
+  ```java
+  List<String> langs = Arrays.asList("java", "kotlin", "haskell", "ruby", "javascript");
+  Optional<String> firstOne = langs.stream().min(String::compareToIgnoreCase);
+  firstOne.ifPresent(System.out::println);
+  ```
+  
+  - 개수 세기: count()
+  ```java
+  long postiveIntegerCount = Stream.of(1, -4, 5, -3)
+                              .filter(x -> x > 0)
+                              .count();
+  ```
+  
 Optional
 =======
 - 옵셔널
