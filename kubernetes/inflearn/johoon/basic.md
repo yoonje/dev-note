@@ -60,7 +60,7 @@ Table of Contents
 쿠버네티스 오브젝트
 =======
 - `쿠버네티스 오브젝트`
-  - pod
-  - service
-  - namespace: kube-system
-  - volume: 영속적인 
+  - pod: 컨테이너의 집합
+  - service: 쿠버네티스 클러스터는 외부와 통신하기 위해 노드를 통해서 파드를 외부에 노출 시키는데 연결하는 네트워크 오브젝트
+  - namespace: 동일한 물리 클러스터를 기반으로 하는 여러 가상 클러스터 구분
+  - volume: 영속적인 데이터 저장을 위한 스토리지 오브젝트
