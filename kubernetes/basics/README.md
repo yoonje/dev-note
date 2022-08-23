@@ -180,27 +180,27 @@ Kubernetes Architecture
   - 쿠버네티스는 현재 상태와 원하는 상태를 비교하여 원하는 상태를 유지하는 오픈소스로써 `상태 체크` -> `차이점 발견` -> `조치`
 - 구조
   - 마스터
-    - etcd: 모든 상태와 데이터를 저장하는 곳
+    - `etcd`: 모든 상태와 데이터를 저장하는 곳
       - 분산 시스템으로 구성하여 안전성을 높임 (고가용성)
       - 가볍고 빠르면서 정확하게 설계 (일관성) 
       - Key(directory)-Value 형태로 데이터 저장 
       - TTL(time to live), watch같은 부가 기능 제공
-    - API server: 상태를 바꾸거나 조회 모듈로 etcd와 유일하게 통신함
+    - `API server`: 상태를 바꾸거나 조회하는 중앙 모듈로 etcd와 유일하게 통신함
       - REST API 형태로 제공
       - 권한을 체크하여 적절한 권한이 없을 경우 요청을 차단
       - 관리자 요청 뿐 아니라 다양한 내부 모듈과 통신
       - 수평으로 확장되도록 디자인
-    - Scheduler: 새로 생성된 Pod을 감지하고 실행할 노드를 선택
+    - `Scheduler`: 새로 생성된 Pod을 감지하고 실행할 노드를 선택
       - 노드의 현재 상태와 Pod의 요구사항을 체크
-    - Controller: 끊임 없이 상태를 체크하고 원하는 상태를 유지
+    - `Controller Manager`: 끊임 없이 상태를 체크하고 원하는 상태를 유지
       - 논리적으로 다양한 종류의 컨트롤러가 존재
   - 노드
-    - kubelet: 노드에서 실행되는 프로그램으로 Pod을 실행/중지하고 상태를 체크
-    - proxy: 네트워크 프록시와 부하 분산 역할을 하는데 프록시 프로그램 대신 iptables 또는 IPVS를 사용
+    - `kubelet`: Pod을 실행/중지하고 상태를 체크
+    - `proxy`: Pod으로 연결되는 네트워크를 관리, 초기에는 kube-proxy 자체가 프록시 서버로 동작하면서 실제 요청을 프록시 서버가 받고 각 Pod에 전달해 주었는데 시간이 지나면서 iptables 또는 IPVS를 사용
 - 파드 생성으로 보는 흐름
   - 1. 사용자 -> API Server에 Pod 요청
   - 2. API Server etcd에 Pod 생성
-  - 3. API Server와 Controller 새 Pod 확인 및 할당
+  - 3. API Server와 Controller Manager 새 Pod 확인 및 할당
   - 4. API Server etcd에 Pod 할당
   - 5. API Server Scheduler에 새 Pod 할당 확인 및 노드 확인
   - 6. API Server etcd에 노드 할당
@@ -212,34 +212,31 @@ Kubernetes Object
 =======
 - Pod: 가장 작은 배포 단위
   - 전체 클러스터에서 고유한 IP를 할당
-  - 여러개의 컨테이너가 하나의 Pod에 속할 수 있음
+  - 여러 개의 컨테이너가 하나의 Pod에 속할 수 있음
+  - 보통 하나의 컨테이너가 하나의 파드
 - ReplicaSet
-  - 여러개의 Pod을 관리
+  - 여러 개의 Pod을 관리
   - 새로운 Pod은 Template을 참고하여 생성
   - 신규 Pod을 생성하거나 기존 Pod을 제거하여 원하는 수(Replicas)를 유지
 - Deployment
   - 배포 버전을 관리
-  - 내부적으로 ReplicaSet을 이용
+  - 내부적으로 ReplicaSet을 이용 가능
 - Service - ClusterIP
-  - 클러스터 내부에서 사용하는 프록시
+  - `클러스터 내부에서 사용`하는 프록시로 클러스터 내부에서만 접근할 수 있는 IP를 할당
   - Pod은 동적이지만 서비스는 고유 IP를 가짐
   - 클러스터 내부에서 서비스 연결은 DNS를 이용
 - Service - NodePort
-  - 노드(host)에 노출되어 외부에서 접근 가능한 서비스
-  - 모든 노드에 동일한 포트로 생성
+  - 노드(host)에 노출되어 `외부에서 접근 가능하게 노출`
+  - 노드의 특정 포트를 사용하여 접근하는 방식으로 포트당 하나의 서비스만 사용 가능
 - Service - LoadBalancer
-  - 하나의 IP주소를 외부에 노출
-- Ingress
-  - 도메인 또는 경로별 라우팅
-- Volume 
-  - Storage
+  - Nodeport 타입의 확장판으로 하나의 IP 주소로 `외부에 노출`
+  - Pod들에 부하를 분산할때 디폴트 알고리즘은 Pod 간에 랜덤으로 부하를 분산
+- Ingress: 외부로부터 서버 내부로 유입되는 네트워크 트래픽을 도메인 또는 경로별 라우팅 등등으로 어떻게 처리할지 결정
+- Volume: Storage 관련 오브젝트로 여러 가지 방법과 형태로 파일 저장
 - Namespace: 논리적인 리소스 구분
-- ConfigMap/Secret 
-  - 설정
-- ServiceAccount 
-  - 권한 계정
-- Role/ClusterRole 
-  - 권한 설정
+- ConfigMap/Secret: 설정
+- ServiceAccount: 권한 계정
+- Role/ClusterRole: 권한 설정
 - 오브젝트 스팩: 오브젝트의 특성 (설정정보)을 기술
   - apiVersion
     - apps/v1, v1, batch/v1, networking.k8s.io/v1, ...
@@ -331,7 +328,7 @@ Pod
   - Pod 제거: `$ kubectl delete -f echo-pod.yml`
 - Pod 생성 및 실행 분석
   - Scheduler는 API서버를 감시하면서 할당되지 않은 unassigned Pod이 있는지 체크
-  - Scheduler는 할당되지 않은 Pod을 감지하고 적절한 노드 node에 할당 (minikube는 단일 노드)
+  - Scheduler는 할당되지 않은 Pod을 감지하고 적절한 노드에 할당 (minikube는 단일 노드)
   - 노드에 설치된 kubelet은 자신의 노드에 할당된 Pod이 있는지 체크
   - kubelet은 Scheduler에 의해 자신에게 할당된 Pod의 정보를 확인하고 컨테이너 생성
   - kubelet은 자신에게 할당된 Pod의 상태를 API 서버에 전달
@@ -403,7 +400,7 @@ Pod
                 port: 3000
       ```
 - `다중 컨테이너`
-  - 대부분 1 Pod = 1 컨테이너지만 여러 개의 컨테이너를 띄워서 Pod에 속한 컨테이너는 서로 네트워크 localhost로 공유시키고 동일한 디렉토리를 공유 시킬 수 있음
+  - 대부분 `1 Pod = 1 컨테이너`지만 여러 개의 컨테이너를 띄워서 Pod에 속한 컨테이너는 서로 네트워크 localhost로 공유시키고 동일한 디렉토리를 공유 시킬 수 있음
   - 설정 파일
   ```yml
   apiVersion: v1
@@ -566,8 +563,8 @@ Deployment
 
 Service
 =======
-- `ClusterIP(Service)`: Pod은 자체 IP를 가지고 다른 Pod과 통신할 수 있지만, 쉽게 사라지고 생성되는 특징 때문에 직접 통신하는 방법은 권장되지 않아서 k8s는 Pod과 직접 통신하는 방법 대신에 `별도의 고정된 IP를 가진 서비스를 만들고 그 서비스를 통해 Pod 안에서 다른 Pod들과 접근하는 방식 사용`
-- ClusterIP(Service) 만들기
+- `ClusterIP`: Pod은 자체 IP를 가지고 다른 Pod과 통신할 수 있지만, 쉽게 사라지고 생성되는 특징 때문에 직접 통신하는 방법은 권장되지 않아서 k8s는 Pod과 직접 통신하는 방법 대신에 `별도의 고정된 IP를 가진 서비스를 만들고 그 서비스를 통해 Pod 안에서 다른 Pod들과 접근하는 방식 사용`
+- ClusterIP 만들기
   - 설정 파일(counter-redis-svc.yml, counter-app.yml)
   ```yml
   apiVersion: apps/v1
@@ -636,14 +633,14 @@ Service
   - Pod, ReplicaSet, Deployment, Service 상태 확인: `$ kubectl get all`
   - counter app에 접근: `$ kubectl exec -it counter-<xxxxx> -- sh`
   - counter app Pod에서 redis Pod으로 접근이 되는지 테스트
-- Service(ClusterIP) 생성 흐름
+- ClusterIP 생성 흐름
   - Endpoint Controller는 Service와 Pod을 감시하면서 조건에 맞는 Pod의 IP를 수집
   - Endpoint Controller가 수집한 IP를 가지고 Endpoint 생성
   - Kube-Proxy는 Endpoint 변화를 감시하고 노드의 iptables을 설정
   - CoreDNS는 Service를 감시하고 서비스 이름과 IP를 CoreDNS에 추가
-- `NodePort(Service)`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부(노드)에서 접근할 수 있도록 NodePort 서비스가 존재
-- NodePort(Service) 만들기
-  - ClusterIP(Service) 및 앱 실행
+- `NodePort`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부에서 접근할 수 있도록 NodePort 및 LoadBalancer 서비스가 존재
+- NodePort 만들기
+  - NodePort 및 앱 실행
     - `$ kubectl apply -f counter-redis-svc.yml`
     - `$ kubectl apply -f counter-app.yml`
   - 설정 파일
@@ -664,9 +661,9 @@ Service
   ```
   - 서비스 생성 및 실행: `$ kubectl apply -f counter-nodeport.yml`
   - 서비스 상태 확인: `$ kubectl get svc`
-- Service(LoadBalancer): NodePort의 단점은 노드가 사라졌을 때 자동으로 다른 노드를 통해 접근이 불가능하므로 자동으로 살아 있는 노드에 접근하기 위해 모든 노드를 바라보는 Load Balancer를 사용하여 NodePort에 직접 요청을 보내는 것이 아니라 Load Balancer에 위임하여 Pod에 접근
-- Service(LoadBalancer) 만들기
-  - ClusterIP(Service) 및 앱 실행
+- `LoadBalancer`: NodePort의 단점은 노드가 사라졌을 때 자동으로 다른 노드를 통해 접근이 불가능하므로 자동으로 살아 있는 노드에 접근하기 위해 모든 노드를 바라보는 Load Balancer를 사용하여 NodePort에 직접 요청을 보내는 것이 아니라 Load Balancer에 위임하여 Pod에 접근
+- LoadBalancer 만들기
+  - LoadBalancer 및 앱 실행
     - `$ kubectl apply -f counter-redis-svc.yml`
     - `$ kubectl apply -f counter-app.yml`
   - 설정 파일(counter-lb.yml)
@@ -821,7 +818,7 @@ Ingress
 Volume
 =======
 - Volume: 컨테이너는 Pod을 제거하면 컨테이너 내부에 저장했던 데이터도 모두 사라지므로 별도의 저장소에 데이터를 저장하고 컨테이너를 새로 만들 때 이전 데이터를 가져와야해서 Volume을 이용하여 컨테이너의 디렉토리를 다른 저장소와 연결
-- 가상 디렉토리를 통한 Volume 만들기
+- 가상 디렉토리를 통한 임시 저장소인 emptyDir Volume 만들기
   - 설정 파일(empty-dir.yml)
   ```yml
   apiVersion: v1
@@ -855,7 +852,7 @@ Volume
         emptyDir: {}
   ```
   - Volume 생성 및 실행: `$ kubectl apply -f empty-dir.yml`
-- hostpath Volume 만들기
+- 노드의 로컬 디스크의 경로를 Pod에서 마운트하는 hostpath Volume 만들기
   - 설정 파일(hostpath.yml)
   ```yml
   apiVersion: v1
