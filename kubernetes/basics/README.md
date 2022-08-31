@@ -7,7 +7,7 @@ Table of contents
    * [Container Orchestration](#Container-Orchestration)
    * [Kubernetes](#Kubernetes)
    * [Kubernetes Architecture](#Kubernetes-Architecture)
-   * [Kubernetes Object](#Kubernetes-Object)
+   * [Kubernetes Object Controller](#Kubernetes-Object-Controller)
    * [Command](#Command)
    * [Pod](#Pod)
    * [ReplicaSet](#ReplicaSet)
@@ -208,7 +208,7 @@ Kubernetes Architecture
   - 8. API Server 노드에 파드 생성
   - 9. API Server etcd에 노드 생성
 
-Kubernetes Object
+Kubernetes Object Controller
 =======
 - Pod: 가장 작은 배포 단위
   - 전체 클러스터에서 고유한 IP를 할당
@@ -234,10 +234,10 @@ Kubernetes Object
 - Ingress: 외부로부터 서버 내부로 유입되는 네트워크 트래픽을 도메인 또는 경로별 라우팅 등등으로 어떻게 처리할지 결정
 - Volume: Storage 관련 오브젝트로 여러 가지 방법과 형태로 파일 저장
 - Namespace: 논리적인 리소스 구분
-- ConfigMap/Secret: 설정
+- ConfigMap/Secret: 설정 및 보안
 - ServiceAccount: 권한 계정
 - Role/ClusterRole: 권한 설정
-- 오브젝트 스팩: 오브젝트의 특성 (설정정보)을 기술
+- 파일 양식: 오브젝트 및 컨트롤러의 특성 (설정정보)을 기술
   - apiVersion
     - apps/v1, v1, batch/v1, networking.k8s.io/v1, ...
   - kind
@@ -295,8 +295,8 @@ Command
   - `$ kubectl config current-context`: 현재 컨텍스트 확인
   - `$ kubectl config use-context minikube`: 컨텍스트 설정
 - 이 외
-  - `$ kubectl api-resources`: 전체 오브젝트 종류 확인
-  - `$ kubectl explain pod`: 오브젝트 설명 보기
+  - `$ kubectl api-resources`: 종류 확인
+  - `$ kubectl explain pod`: 설명 보기
 
 Pod
 =======
