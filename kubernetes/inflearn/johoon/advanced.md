@@ -9,6 +9,7 @@ Table of Contents
    * [애플리케이션 노출법](#애플리케이션-노출법)
    * [애플리케이션 볼륨 사용법](#애플리케이션-볼륨-사용법)
    * [쿠버네티스 노드 구성 및 관리](#쿠버네티스-노드-구성-및-관리)
+   * [쿠버네티스 파드 구성 및 관리](#쿠버네티스-노드-구성-및-관리)
    * [쿠버네티스 클러스터 관리](#쿠버네티스-클러스터-관리)
    * [효과적인 애플리케이션 구성 및 관리](#효과적인-애플리케이션-구성-및-관리)
 <!--te-->
@@ -16,7 +17,7 @@ Table of Contents
 쿠버네티스를 배우기 위한 사전 준비 작업
 =======
 - `혼동되는 용어 정리`
-  - 파드: 파드(Pod)는 1개 이상의 컨테이너가 캡슐화 되어 클러스터 안에서 배포되는 가장 작은 단위의 객체
+  - 파드: 1개 이상의 컨테이너가 캡슐화 되어 클러스터 안에서 배포되는 가장 작은 단위의 객체
   - 애플리케이션: 파드와 컨테이너와 관계 없는 `기능적인 단위`로 파드가 여러 개 하나의 애플리케이션을 이룰 수도 있음
 - `자주 쓰이는 kubectl 기본 명령어 정리`
   - get: 오브젝트 조회
@@ -34,20 +35,12 @@ Table of Contents
 
 애플리케이션 배포법
 =======
-- `배포 관련 기본 오브젝트`
-  - 파트
-  - 디플로이먼트
-  - 레플리카셋
-  - 잡
-  - 크론잡
-  - 데몬셋
-  - 스테이트풀셋
-- `파드`:
+- `파드`: 1개 이상의 컨테이너가 캡슐화 되어 클러스터 안에서 배포되는 가장 작은 단위의 객체
   - 파드를 이루는 코드
   ```yml
   apiVersion: v1 # v1.22에서 v1을 apiVersion을 선택
   kind: Pod # 오브젝트
-  metadata: # 파드 이름 및 레이블
+  metadata: # 파드 이름 및 레이블(별칭)
     labels:
       run: po-nginx
     name: po-nginx
@@ -56,11 +49,11 @@ Table of Contents
      image: nginx
      name: nginx
   ```
-- `디플로이먼트`:
+- `디플로이먼트`: ReplicaSet + Pod + history로 ReplicaSet 기능에서 롤링 업데이트 및 히스토리 확인과 롤백 기능을 하는 컨트롤러
   - 디플로이먼트를 이루는 코드
   ```yml
   apiVersion: apps/v1 # v1.22에서 apps/v1을 apiVersion을 선택
-  kind: Deployment # 오브젝트
+  kind: Deployment # 컨트롤러
   metadata:
     labels:
       app: deploy-nginx
@@ -102,25 +95,306 @@ Table of Contents
         - name: nginx
         iamge: nginx
   ``` 
-- `스테이트풀셋`:
-  - 
+- `스테이트풀셋`: 상태 값을 가지고 있는 파드로 생성 및 삭제에서 순서를 갖으며 고정된 이름을 가짐
+  - 스테이트풀셋을 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    name: sts-chk-hn
+  spec:
+    replicas: 3
+    serviceName: sts-svc-domain # statefulset need it
+    selector:
+    matchLabels:
+      app: sts
+    template:
+      metadata:
+        labels:
+          app: sts
+      spec:
+        containers:
+        - name: chk-hn
+          image: sysnet4admin/chk-hn
+  ```
 
 애플리케이션 노출법
 =======
-- `NodePort`
-  - 
-- `LoadBalancer`
-  - 
-- `ExternalName`
-  - 
-- `ClusterIP`
-  - 
-- `Headless`
-  - 
-- `Endpoints`
-  - 
-- `Ingress`
-  - 
+- `NodePort`: 노드의 포트에 연결한 지정한 포트를 외부에 노출하는 서비스
+  - NodePort와 이를 배포하는 Deployment를 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: deploy-nginx
+    labels:
+      app: deploy-nginx
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: deploy-nginx
+    template:
+      metadata:
+        labels:
+          app: deploy-nginx
+      spec:
+        containers:
+        - name: nginx
+          image: nginx
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: np-nginx # 서비스의 이름
+  spec:
+    selector:
+      app: deploy-nginx # 노출할 deployment 이름
+    ports:
+      - name: http
+        port: 80 # 노드 -> 서비스에 대한 포트
+        targetPort: 80 # 서비스 -> 파드에 대한 포트
+        nodePort: 30000 # 노출할 포트
+    type: NodePort
+  ```
+- `LoadBalancer`: EXTERNAL IP를 만들고 이를 통해 외부에 노출하는 서비스
+  - LoadBalancer와 이를 배포하는 Deployment를 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: deploy-nginx
+    labels:
+      app: deploy-nginx
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: deploy-nginx
+    template:
+      metadata:
+        labels:
+          app: deploy-nginx
+      spec:
+        containers:
+        - name: nginx
+          image: nginx
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: lb-nginx
+  spec:
+    selector:
+      app: deploy-nginx
+    ports:
+      - name: http
+        port: 80 
+        targetPort: 80 
+    type: LoadBalancer
+  ```
+- `ExternalName`: 외부에 있는 도메인에 쿠버네티스 내에서 연결할 때 별칭을 지을 때 사용하는 서비스
+  - ExternalName를 이루는 코드
+  ```yml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: ex-url-1 # 서비스 이름
+    namespace: default
+  spec:
+    type: ExternalName
+    externalName: sysnet4admin.github.io # 와부 도메인
+  ```
+- `ClusterIP`: 파드와 파드의 연결을 위한 클러스터 내부의 IP를 설정하는 서비스
+  - ClusterIP와 이를 배포하는 Deployment를 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: deploy-nginx
+    labels:
+      app: deploy-nginx
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: deploy-nginx
+    template:
+      metadata:
+        labels:
+          app: deploy-nginx
+      spec:
+        cotainers:
+        - name: nginx
+          image: nginx
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: cl-nginx
+  spec:
+    selector:
+      app: deploy-nginx
+    ports:
+      - name: http
+        port: 80 
+        targetPort: 80 
+    type: ClusterIP
+  ```
+- `Headless`: CLUSTER-IP가 없는 ClusterIP 타입의 서비스로 IP 없이 도메인으로 연결할 때 스테이트풀셋과 함께 사용
+  - Headless와 이를 배포하는 Deployment를 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    name: sts-chk-hn
+  spec:
+    replicas: 3
+    serviceName: sts-svc-domain # statefulset need it
+    selector:
+      matchLabels:
+        app: sts
+    template:
+      metadata:
+        labels:
+          app: sts
+      spec:
+        containers:
+        - name: chk-hn
+          image: sysnet4admin/chk-hn
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: sts-svc-domain
+  spec:
+    selector:
+      app: sts
+    ports:
+      - port: 80
+    clusterIP: None
+  ```
+- `Endpoints`: 서비스는 아니지만 각 서비스에 의해 도달하는 종착 주소로 서비스 생성 시 자동 생성되나 수동 생성도 가능
+  - 서비스와 직접 만든 앤드포인트를 이루는 코드
+  ```yml
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: external-data
+  spec:
+    ports:
+      - name: http
+        port: 80
+        targetPort: 80
+  ---
+  apiVersion: v1
+  kind: Endpoints
+  metadata:
+    name: external-data
+  subsets:
+    - addresses:
+        - ip: 192.168.1.11 # endpoint 지정
+      ports:
+        - name: http
+          port: 80
+  ```
+- `Ingress`: 서비스는 아니지만 각 서비스에 의해 동작되며 HTTP(S)기반의 L7 로드밸런싱 기능을 제공하여 URL에 따라서 라우팅시키는 컴포넌트
+  - 서비스와 디플로이먼트를 이루는 코드
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: deploy-ip
+    labels:
+      app: deploy-ip
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: deploy-ip
+    template:
+      metadata:
+        labels:
+          app: deploy-ip
+      spec:
+        containers:
+        - name: chk-ip
+          image: sysnet4admin/chk-ip
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: ing-ip 
+  spec:
+    selector:
+      app: deploy-ip  
+    ports:
+      - name: http
+        port: 80
+        targetPort: 80
+    type: ClusterIP # 클러스터 IP 서비스
+  ```
+  ```yml
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: deploy-nginx
+    labels:
+      app: deploy-nginx
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: deploy-nginx
+    template:
+      metadata:
+        labels:
+          app: deploy-nginx 
+      spec:
+        containers:
+        - name: nginx
+          image: nginx
+  ---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: ing-default 
+  spec:
+    selector:
+      app: deploy-nginx  
+    ports:
+      - name: http
+        port: 80
+        targetPort: 80
+    type: ClusterIP # 클러스터 IP 서비스
+  ```
+  - 인그레스를 이루는 코드
+  ```yml
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: nginx-ingress
+    annotations: # 시스템에 인식시키기 위해 만든 주석
+      nginx.ingress.kubernetes.io/rewrite-target: / # 전체 path를 받음
+  spec:
+    rules:
+    - http:
+        paths:
+        - path: / # path 매칭
+          pathType: Prefix
+          backend:
+            service:
+              name: ing-default # 서비스 이름
+              port:
+                number: 80
+        - path: /ip # path 매칭
+          pathType: Prefix
+          backend:
+            service:
+              name: ing-ip # 서비스 이름
+              port:
+                number: 80
+  ```
 
 애플리케이션 볼륨 사용법
 =======
@@ -421,6 +695,9 @@ Table of Contents
   ```
 
 쿠버네티스 노드 구성 및 관리
+=======
+
+쿠버네티스 파드 구성 및 관리
 =======
 
 쿠버네티스 클러스터 관리
