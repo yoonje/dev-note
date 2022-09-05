@@ -210,7 +210,8 @@ Kubernetes Architecture
 
 Kubernetes Object Controller
 =======
-- Pod: 가장 작은 배포 단위
+- Pod
+  - 가장 작은 배포 단위
   - 전체 클러스터에서 고유한 IP를 할당
   - 여러 개의 컨테이너가 하나의 Pod에 속할 수 있음
   - 보통 하나의 컨테이너가 하나의 파드
@@ -229,7 +230,7 @@ Kubernetes Object Controller
   - 노드(host)에 노출되어 `외부에서 접근 가능하게 노출`
   - 노드의 특정 포트를 사용하여 접근하는 방식으로 포트당 하나의 서비스만 사용 가능
 - Service - LoadBalancer
-  - Nodeport 타입의 확장판으로 하나의 IP 주소로 `외부에 노출`
+  - 하나의 EXTERNAL IP 주소로 `외부에 노출`
   - Pod들에 부하를 분산할때 디폴트 알고리즘은 Pod 간에 랜덤으로 부하를 분산
 - Ingress: 외부로부터 서버 내부로 유입되는 네트워크 트래픽을 도메인 또는 경로별 라우팅 등등으로 어떻게 처리할지 결정
 - Volume: Storage 관련 오브젝트로 여러 가지 방법과 형태로 파일 저장
