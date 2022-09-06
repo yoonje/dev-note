@@ -16,7 +16,6 @@ Table of contents
    * [Ingress](#Ingress)
    * [Volume](#Volume)
    * [ConfigMap](#ConfigMap)
-   * [Secret](#Secret)
 <!--te-->
 
 Container Orchestration

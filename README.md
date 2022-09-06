@@ -8,7 +8,6 @@
 |effective-java|11장 12장 보충 필요|
 |clean-code|13장 14장 15장 16장 보충 필요|
 |linux/art-of-cli|Everyday use 보충 필요|
-|kubernetes/basics|Secret 보충 필요|
 |kubernetes/inflearn/taemin/basic|중급 Pod,Object,Controller 보충 필요|
 |java/java8|섹션6~|
 |java/test|섹션2~|
