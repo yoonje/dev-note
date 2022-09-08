@@ -1,10 +1,6 @@
 # Kubernetes 정리 자료
 대세는 쿠버네티스 강의를 정리하여 만들었습니다.
 
-##### k8s version: 1.15 / docker version: 18.06.2 / dashboard version: 1.10.1
-
-##### k8s Cluster Information: Master: 1, Node: 2
-
 Table of Contents
 =================
 <!--ts-->
