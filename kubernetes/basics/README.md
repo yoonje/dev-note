@@ -226,7 +226,7 @@ Kubernetes Object Controller
   - Pod은 동적이지만 서비스는 고유 IP를 가짐
   - 클러스터 내부에서 서비스 연결은 DNS를 이용
 - Service - NodePort
-  - 노드(host)에 노출되어 `외부에서 접근 가능하게 노출`
+  - 노드(host)를 노출하여 `외부에서 접근 가능하게 노출`
   - 노드의 특정 포트를 사용하여 접근하는 방식으로 포트당 하나의 서비스만 사용 가능
 - Service - LoadBalancer
   - 하나의 EXTERNAL IP 주소로 `외부에 노출`
@@ -594,7 +594,7 @@ Service
   kind: Service
   metadata:
     name: redis
-  spec:
+  spec: # 서비스에 type을 지정하지 않으면 ClusterIP로 생성
     ports:
       - port: 6379 # 서비스가 생성할 Port
         targetPort: 6379 # 서비스가 접근할 Pod의 Port
@@ -638,7 +638,7 @@ Service
   - Endpoint Controller가 수집한 IP를 가지고 Endpoint 생성
   - Kube-Proxy는 Endpoint 변화를 감시하고 노드의 iptables을 설정
   - CoreDNS는 Service를 감시하고 서비스 이름과 IP를 CoreDNS에 추가
-- `NodePort`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부에서 접근할 수 있도록 NodePort 및 LoadBalancer 서비스가 존재
+- `NodePort`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부에서 접근할 수 있도록 하는 방법 중 하나로 노드(host)를 노출하여 외부에서 접근
 - NodePort 만들기
   - NodePort 및 앱 실행
     - `$ kubectl apply -f counter-redis-svc.yml`
@@ -661,7 +661,7 @@ Service
   ```
   - 서비스 생성 및 실행: `$ kubectl apply -f counter-nodeport.yml`
   - 서비스 상태 확인: `$ kubectl get svc`
-- `LoadBalancer`: NodePort의 단점은 노드가 사라졌을 때 자동으로 다른 노드를 통해 접근이 불가능하므로 자동으로 살아 있는 노드에 접근하기 위해 모든 노드를 바라보는 Load Balancer를 사용하여 NodePort에 직접 요청을 보내는 것이 아니라 Load Balancer에 위임하여 Pod에 접근
+- `LoadBalancer`: CluterIP는 클러스터 내부에서만 접근할 수 있어서 클러스터 외부에서 접근할 수 있도록 하는 방법 중 하나로 하나의 EXTERNAL IP 주소로 `외부에 노출`하는 방법으로 NodePort는 클러스터 외부에 포트를 직접 노출하기 때문에 보안상 문제가 있어므로 NodePort에 직접 요청을 보내는 것이 아니라 LoadBalancer에 위임하여 Pod에 접근
 - LoadBalancer 만들기
   - LoadBalancer 및 앱 실행
     - `$ kubectl apply -f counter-redis-svc.yml`
@@ -687,7 +687,7 @@ Service
 
 Ingress
 =======
-- Ingress: 하나의 클러스터에서 여러 가지 서비스를 운영한다면 외부 연결을 할 때 NodePort를 이용하면 서비스 개수만큼 포트를 오픈하고 사용자에게 어떤 포트인지 알려줘야하므로 Ingress를 통해서 포트를 하나만 Open하고 도메인이나 경로를 통해서 서비스를 분기
+- Ingress: 하나의 클러스터에서 여러 가지 서비스를 운영한다면 외부 연결을 할 때 NodePort를 이용하면 서비스 개수만큼 포트를 오픈하고 사용자에게 어떤 포트인지 알려줘야하므로 Ingress를 통해서 포트를 하나만 Open하고 `도메인이나 경로를 통해서 서비스를 분기`
 - Ingress 만들기
   - 설정 파일(echo-v1.yml, echo-v2.yml)
   ```yml
@@ -904,7 +904,7 @@ ConfigMap
         command: ["sleep"]
         args: ["100000"]
         volumeMounts:
-          - name: config-vol # 볼륨 이룸
+          - name: config-vol # 볼륨 이름
             mountPath: /etc/config
     volumes:
       - name: config-vol

@@ -117,7 +117,7 @@ Table of Contents
 
 애플리케이션 노출법
 =======
-- `NodePort`: 노드의 포트에 연결한 지정한 포트를 외부에 노출하는 서비스
+- `NodePort`: 노드에 지정한 포트에 연결한 파드를 외부에 노출하는 서비스
   - NodePort와 이를 배포하는 Deployment를 이루는 코드
   ```yml
   apiVersion: apps/v1
@@ -149,12 +149,12 @@ Table of Contents
       app: deploy-nginx # 노출할 deployment 이름
     ports:
       - name: http
-        port: 80 # 노드 -> 서비스에 대한 포트
-        targetPort: 80 # 서비스 -> 파드에 대한 포트
-        nodePort: 30000 # 노출할 포트
+        port: 80 # 서비스의 포트
+        targetPort: 80 # 파드의 포트
+        nodePort: 30000 # 외부네 노출할 포트
     type: NodePort
   ```
-- `LoadBalancer`: EXTERNAL IP를 만들고 이를 통해 외부에 노출하는 서비스
+- `LoadBalancer`: EXTERNAL IP를 할당하면 이를 통해 파드를 외부에 노출시킬 수 있는 서비스
   - LoadBalancer와 이를 배포하는 Deployment를 이루는 코드
   ```yml
   apiVersion: apps/v1
@@ -200,7 +200,7 @@ Table of Contents
     namespace: default
   spec:
     type: ExternalName
-    externalName: sysnet4admin.github.io # 와부 도메인
+    externalName: sysnet4admin.github.io # 외부 도메인
   ```
 - `ClusterIP`: 파드와 파드의 연결을 위한 클러스터 내부의 IP를 설정하는 서비스
   - ClusterIP와 이를 배포하는 Deployment를 이루는 코드
@@ -680,7 +680,7 @@ Table of Contents
           volumeMounts:
           - name: each-sts-backup
             mountPath: /backup_data
-    volumeClaimTemplates: # 볼륨클레임템플릿
+    volumeClaimTemplates: # 볼륨 클레임 템플릿
   - metadata:
       name: each-sts-backup
     spec:
