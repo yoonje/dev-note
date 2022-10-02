@@ -7,6 +7,12 @@ Table of Contents
    - [Kubernetes Basis](#Kubernetes-Basis)
    - [Basic Object](#Basic-Object) 
    - [Controller](#Controller)
+   - [Pod](#Pod)
+   - [Service](#Service)
+   - [Volume](#Volume)
+   - [StatefulSet](#StatefulSet)
+   - [Ingress](#Ingress)
+   - [Autoscaler](#Autoscaler)
 <!--te-->
 
 Kubernetes Basis
@@ -65,8 +71,7 @@ Basic Object
   - Volume
   - Namespace
 - `Pod`: 쿠버네티스에서 `배포할 수 있는 컨테이너 집합 단위`로 한 개 이상의 컨테이너와 스토리지, 네트워크 속성을 가지며 한 파드 안의 컨테이너는 모두 같은 노드에 배치해야한다. 파드 생성 시에 쿠버네티스 클러스터 내에서 접속할 수 있는 IP가 자동 할당된다.
-  - 파드 생성 및 활용
-    1. yaml 파일 정의하기
+  - 파드 예시
     ```yaml
     apiVersion: v1  
     # 파일에서 정의하는 쿠버네티스 오브젝트 유형
@@ -92,22 +97,13 @@ Basic Object
         ports:  
         - containerPort: 8080
     ```
-    2. 파드 생성 및 배포하기  
-    `$ kubectl apply -f {파드 이름}.yaml`
-    3. 파드 상태 확인
-    `$ kubectl get pod`  
-    4. 파드 안의 컨테이너에 접근
-    `$ kubectl exec -it {파드 이름} sh -c {컨테이너 이름}`
-    5. 파드 삭제
-    `$ kubectl delete -f {파드 이름}.yaml`
   - Label: Pod 뿐만 아니라 여러 오브젝트에서 사용할 수 있는 메타정보로 목적에 따라 오브젝트에 `key:value`방식으로 라벨을 달고 분리하여 이후 연결하기 위해서 사용한다. {오브젝트 이름}.yaml 파일 안에 `spec의 selector와 labels 옵션`을 통해 선택이 가능하다.
   - Selector: Label을 이용해 쿠버네티스 파드를 선택하는 방법이다.
   - Node Schedule: 파드를 만들 때 노드에 라벨을 달고 노드를 직접 지정할 때 사용한다. {오브젝트 이름}.yaml 파일 안에 `spec의 NodeSelector 옵션`을 통해 정의가 가능하다. 일반적인 경우엔 쿠버네티스 스케줄러가 판단해서 컨테이너 리소스 설정에 따라 분배한다.
 
 - `Service`: 네트워크와 관련된 오브젝트로 Pod을 외부 네트워크와 연결하는 기능을 하며 파드의 IP는 재생성 시에 동적으로 변경되기 때문에 고정적인 IP를 Service에 할당하고 파드에 접근하기 위한 경로를 정의한다.
   - `ClusterIP`: 서비스의 종류 중 하나로 쿠버네티스 클러스터 내의 IP에서만 접근할 수 있는 IP로 여러 개의 파드와 연결하여 트래픽을 분산할 수 있다. Cluster 내에서만 접근 가능한 서비스이다.
-  - ClusterIP 생성 및 활용
-    1. yaml 파일 정의하기
+  - ClusterIP 예시
     ```yaml
     apiVersion: v1  
     # 파일에서 정의하는 쿠버네티스 오브젝트 유형
@@ -127,13 +123,8 @@ Basic Object
         # 서비스의 타입 (생략하면 기본 값이 ClusterIP)
         type: ClusterIP
     ```
-    2. 서비스 생성 및 배포하기  
-   `$ kubectl apply -f {서비스 이름}.yaml`
-    3. 서비스 상태 확인  
-    `$ kubectl get svc {서비스 이름}`
   - `NodePort`: 서비스의 종류 중 하나로 ClusterIP처럼 클러스터 내 IP를 만들고 서비스가 파드로 트래픽을 분산하는 기능을 갖는다. 클러스터 내 모든 노드에 설정된 Port를 할당하고 서비스로 요청이 올 경우 연결된 파드로 전송한다. NodePort는 물리 IP와 포트(nodePort)를 직접 노출해 쿠버네티스 클러스터 외부로 서비스를 공개한다. 보안 상의 이슈로 내부망에서만 사용해야한다.
-  - NodePort 생성 및 활용
-    1. yaml 파일 정의하기
+  - NodePort 예시
     ```yml
     apiVersion: v1
     kind: Service
@@ -154,12 +145,8 @@ Basic Object
       # 특정 노드 IP로 접근한 트래픽은 해당 노드의 파드에만 연결되도록 설정
       externalTrafficPolicy: Local
     ```
-    2. 서비스 생성 및 배포하기  
-   `$ kubectl apply -f {서비스 이름}.yaml`
-    3. 서비스 상태 확인  
-    `$ kubectl get svc {서비스 이름}`
   - `LoadBalancer`: 서비스의 종류 중 하나로 외부로 서비스를 노출시킬 수 있는 안전한 방법을 제공한다. EXTERNAL IP를 할당하면 이를 통해 외부에 노출시킬 수 있다.
-  - LoadBalancer 생성 및 활용
+  - LoadBalancer 예시
     ```yml
     apiVersion: v1
     kind: Service
@@ -179,7 +166,7 @@ Basic Object
 
 - `Volume`: 저장소와 관련된 오브젝트, 파드가 사용할 공유 저장소와 관련된 오브젝트로 파드의 yaml 파일에서 설정할 수 있다. 호스트 디렉토리를 그대로 사용할 수도 있고 EBS 같은 스토리지를 동적으로 생성하여 사용할 수 있다.
   - `emptyDir`: 파드 안의 컨테이너들끼리 데이터를 공유하기 위해서 사용한다. 최초 볼륨이 생성됐을 때 비어 있는 상태이다. 파드 생성 시 만들어지고 삭제 시 없어진다.
-  - emptyDir 생성 및 활용
+  - emptyDir 예시
   ```yml
   apiVersion: v1
   kind: Pod
@@ -202,7 +189,7 @@ Basic Object
       emptyDir: {}
   ```
   - `hostPath`: 각각의 파드들이 사전 정의된 호스트 경로를 마운트하여 경로를 공유하기 때문에 파드가 죽어도 삭제되지 않는다. 호스트 패스이기 때문에 하나의 노드 안에서만 공유된다.
-  - hostPath 생성 및 활용
+  - hostPath 예시
   ```yml
   apiVersion: v1
   kind: Pod
@@ -224,7 +211,7 @@ Basic Object
         type: DirectoryOrCreate # 사전에 해당 노드의 경로가 없으면 생성시키는 용도
   ```
   - 퍼시스턴트 볼륨(PV)과 퍼시스턴트 볼륨 클레임(PVC): 퍼시스턴트 볼륨은 파드가 사용할 스토리지의 크기 및 종류를 정의한다. 클러스터 운영자 영역에 해당한다. 퍼시스턴트 볼륨 클레임은 파드가 퍼시스턴트 볼륨을 동적으로 확보하기 위해 요청할 때 사용한다. 클러스터 사용자 영역에 해당한다.
-  - 퍼시스턴트 볼륨과 퍼시스턴트 볼륨 클레임 생성 및 활용
+  - 퍼시스턴트 볼륨과 퍼시스턴트 볼륨 클레임 예시
   ```yml
   apiVersion: v1
   kind: PersistentVolume
@@ -274,7 +261,7 @@ Basic Object
         claimName: pvc-01
   ```
 - `ConfigMap`과 `Secret`: ConfigMap은 파드 생성 시에 참조할 일반적인 상수를 모아놓은 오브젝트로 Literal 값이나 File 값으로 설정 가능하다. Secret은 파드 생성 시에 참조할 보안적인 상수를 모아놓은 오브젝트로 Literal 값이나 File 값으로 설정 가능하다. ConfigMap과 달리 메모리에 데이터를 저장되고 하나의 Secret 당 1MB까지만 저장 가능하다.
-  - ConfigMap과 Secret 생성 및 활용 - Literal
+  - ConfigMap과 Secret 생성 및 활용 - `Literal` 예시
   ```yml
   apiVersion: v1
   kind: ConfigMap
@@ -307,7 +294,7 @@ Basic Object
       - secretRef:
           name: sec-dev
   ```
-  - ConfigMap과 Secret 생성 및 활용 - 볼륨 마운트 + File
+  - ConfigMap과 Secret 생성 및 활용 - `볼륨 마운트 + File` 예시
   ```sh
   # file-c.txt 라는 파일로 cm-file라는 이름의 ConfigMap 생성
   $ kubectl create configmap cm-file --from-file=./file-c.txt
@@ -339,6 +326,46 @@ Basic Object
       configMap:
         name: cm-file
   ```
+- `Namespace`: 쿠버네티스 클러스터 하나를 용도 및 사용자에 따라 여러 개의 논리적인 단위로 나누어서 사용하는 것이다.
+  - 기본 Namespace
+    - default: 기본 네임스페이스, 쿠버네티스에서 명령을 실행할 때 별도의 네임스페이스를 지정하지 않는다면 항상 defaul 네임스페이스에 명령을 적용
+    - kube-system: 쿠버네티스 시스템에서 관리하는 네임스페이스, 이 네임스페이스에는 쿠버네티스 관리용 파드나 설정이 있다.
+    - kube-public: 클러스터 안 모든 사용자가 읽을 수 있는 네임스페이스, 보통 클러스터 사용량 같은 정보를 이 네임스페이스에서 관리한다.
+    - ◼︎ kube-node-lease : 각 노드의 임대 오브젝트(Lease Object)들을 관리하는 네임스페이스, 쿠버네티스 1.13 이후 알파 기능으로 추가됨.
+  - `ResourceQuota`: `Namespace마다` 제한하는 자원을 명시하는 기능으로 `오브젝트의 숫자` 및 `CPU`와 `Memory` 그리고 `Storage`를 제한한다. 자원을 나타내는 requests와 제한을 나타내는 limits로 구성된다.
+  - `LimitRange`: ResourceQuota가 정해진 Namespace 내에서 `파드와 컨테이너마다` 자원의 상한을 설정
+  - ResourceQuota 예시
+    ```yml
+    apiVersion: v1
+    kind: ResourceQuota
+    metadata:
+      name: rq-1
+      namespace: nm-3
+    spec:
+      hard:
+        requests.memory: 1Gi
+        limits.memory: 1Gi
+    ```
+  - LimitRange 예시
+    ```yml
+    apiVersion: v1
+    kind: LimitRange
+    metadata:
+      name: lr-1
+    spec:
+      limits:
+      - type: Container
+        min:
+          memory: 0.1Gi
+        max:
+          memory: 0.4Gi
+        maxLimitRequestRatio:
+          memory: 3
+        defaultRequest:
+          memory: 0.1Gi
+        default:
+          memory: 0.2Gi
+    ```
 
 Controller
 =======
@@ -349,10 +376,10 @@ Controller
   - Job
   - CronJob
   - StatefulSet
-- `ReplicaSet`
-  - ReplicaSet: 레플리케이션 컨트롤러의 상위 버전으로 같은 스펙을 갖는 파드를 여러 개 생성하고 관리하는 역할을 한다. 
-  - ReplicaSet 생성 및 활용
-    1. yaml 파일 정의하기
+  - Ingress
+  - Autoscaler
+- `ReplicaSet`: 레플리케이션 컨트롤러의 상위 버전으로 같은 스펙을 갖는 파드를 여러 개 생성하고 관리하는 역할을 한다. 
+  - ReplicaSet 예시
     ```yml
     apiVersion: v1
     kind: Pod
@@ -388,14 +415,8 @@ Controller
           - name: container
             image: kubetm/app:v1
     ```
-    2. 레플리카세트 생성 및 배포하기  
-   `$ kubectl apply -f {레플리카세트 이름}.yaml`
-    3. 레플리카세트 상태 확인  
-   `$ kubectl get pod`
-- `Deployment`
-  - Deployment: ReplicaSet + Pod + history로 ReplicaSet 기능에서 롤링 업데이트 및 히스토리 확인과 롤백 기능을 하는 컨트롤러이다.
-  - Deployment 생성 및 활용
-    1. yaml 파일 정의하기
+- `Deployment`: ReplicaSet + Pod + history로 ReplicaSet 기능에서 롤링 업데이트 및 히스토리 확인과 롤백 기능을 하는 컨트롤러이다.
+  - Deployment 예시
     ```yaml
     apiVersion: apps/v1
     kind: Deployment
@@ -432,16 +453,10 @@ Controller
         protocol: TCP
         targetPort: 8080
     ```
-    2. 클러스터에 반영하기  
-    `$ kubectl apply -f {디플로이먼트 이름}.yaml`
-    3. 상태 확인하기  
-    `$ kubectl get pod,replicaset,deployment ==selector app={앱 이름}`
   - Recreate: Deployment 업그레이드 방식 중 하나로 Pod v1을 만들고 recreate를 하면 Pod v1를 삭제하고 Pod v2를 만든 이후 업그레이드를 한다. Downtime 존재하는 단점이 있다. {디플로이먼트 이름}.yaml 파일 안에 `spec의 strategy 옵션`을 통해 정의가 가능하다.
   - Rolling Update: Deployment 업그레이드 방식 중 하나로 Pod v1을 만들고 rolling update를 하면 Pod v2를 1개씩 만들고 하나씩 옮기는 방식이다. Downtime 존재하지 않는다. {디플로이먼트 이름}.yaml 파일 안에 `spec의 strategy 옵션`을 통해 정의가 가능하다.
-- `Job`
-  - Job: 상주 실행을 목적으로 하지 않는 파드를 여러 개 생성하고 정상적인 종료를 보장한다.
-  - Job 생성 및 활용
-    1. yaml 파일 정의하기
+- `Job`: 상주 실행을 목적으로 하지 않는 파드를 여러 개 생성하고 정상적인 종료를 보장한다.
+  - Job 예시
     ```yaml
     apiVersion: batch/v1  
     # 파일에서 정의하는 쿠버네티스 컨트롤러 유형
@@ -454,7 +469,7 @@ Controller
       # 파드에 대한 정의
       template:  
         spec:  
-          # 파드의 status 정책 설정
+          # 파드의 status 정책 설정 -> Job이므로 재시작 Never 설정 필요
           restartPolicy: Never  
           containers:  
           - name: container  
@@ -462,16 +477,8 @@ Controller
             command: ["sh",  "-c",  "echo 'job start';sleep 20; echo 'job end'"] 
             terminationGracePeriodSeconds: 0
     ```
-    2. Job을 통해 파드 실행하기  
-    `$ kubectl apply -f {Job 이름}.yaml`
-    3. Job의 로그 확인하기  
-    `$ kubectl logs -l app={앱 이름}`
-    4. 종료된 파드 확인하기  
-    `$ kubectl get pod -l app={앱 이름} --show-all`
-- `CronJob`
-  - CronJob: 크론 문법으로 스케줄링되는 잡이다.
-  - CronJob 생성 및 활용
-    1. yaml 파일 정의하기
+- `CronJob`: 크론 문법으로 스케줄링되는 잡이다.
+  - CronJob 예시
     ```yaml
     apiVersion: batch/v1beta1  
     # 파일에서 정의하는 쿠버네티스 컨트롤러 유형
@@ -489,7 +496,7 @@ Controller
           # 파드에 대한 정의
           template:  
             spec:
-            # 파드의 status 정책 설정
+            # 파드의 status 정책 설정 -> Job이므로 재시작 Never 설정 필요
             restartPolicy: Never  
             containers:  
             - name: container  
@@ -497,9 +504,167 @@ Controller
               command: ["sh",  "-c",  "echo 'job start';sleep 20; echo 'job end'"]  
               terminationGracePeriodSeconds: 0
     ```
-    2. CronJob을 통해 파드 실행하기  
-    `$ kubectl apply -f {CronJob 이름}.yaml`
-    3. CronJob의 상태 확인하기  
-    `$ kubectl get job -l app={CronJob 이름}`
-    4. CronJob의 로그 확인하기  
-    `$ kubectl logs -l app={CronJob 이름}`
+
+Pod
+=======
+- `Lifecycle`: 파드는 생성부터 삭제까지의 과정에 생명 주기가 있으며 Lifecycle이 현재 어느 단계에 있는지를 알려주는 `Phase`와 현재 Pod가 서비스를 제공할 수 있는지 순서대로 점검한 `Conditions`를 가짐
+  - 파드의 Phase 단계
+    - Pending: Pod 생성 요청을 받았지만 하나 이상의 container가 실행 준비를 마치지 못한 상태이다. 컨테이너 이미지를 다운로드하는 시간도 이 Phase에 포함된다.
+    - Running: Node가 배정되었고, 모든 컨테이너가 생성된 상태이다. 최소한 하나 이상의 컨테이너가 실행 중이거나 시작 또는 재시작 중이다.
+    - Succeeded: Pod의 모든 컨테이너가 성공적으로 종료되었으며, 재시작할 필요가 없다.
+    - Failed: 모든 컨테이너가 종료되었으나, 하나 이상의 컨테이너가 0이 아닌 값을 반환하였거나 시스템에 의해 강제로 종료되어 실패로 끝난 경우이다. 
+    - Unknown: k8s가 Pod의 상태 정보를 읽어오지 못하는 상태이며, 일반적으로 kubelet과 API 서버간의 통신에 문제가 있는 경우가 많다.
+  - 파드의 Conditions 종류
+    - PodScheduled: Pod가 Node에 배정된지에 대한 여부이다.
+    - ContainersReady: Pod가 모든 컨테이너에 ready 상태인지 여부이다.
+    - Initialized: 모든 `init container`가 성공적으로 실행 여부이다.
+    - Ready: Pod이 서비스를 제공할 수 있는 상태 여부이다. ReadinessProbe를 통해 결정되며, 이를 통과해야 Endpoint가 할당되어 Service를 통해 로드밸런싱이 이루어진다.
+  - 컨테이너의 State와 Reason
+    - 파드의 Phase가 Running이여도 내부 컨테이너가 Running이 아닐 수 있으니 파드의 Conditions을 보고 컨테이너도 확인해야함
+    - State: Waiting, Running, Terminated
+    - Reason: ContainerCreating, CrashLoopBackOff, Error, Completed
+  - describe pob 예시
+  ```yml
+  [root@k8s-master ~]# kubectl describe pods nginx-deployment-69cfdf5bc7-gcpd2
+  Name:         nginx-deployment-69cfdf5bc7-gcpd2
+  Namespace:    default
+  Priority:     0
+  Node:         k8s-node2/192.168.56.32
+  Start Time:   Fri, 07 Jan 2022 13:35:49 +0000
+  Labels:       app=nginx-deployment
+                pod-template-hash=69cfdf5bc7
+  Annotations:  cni.projectcalico.org/containerID: b55493deca71e924b1f262af9656954acd426c220b1c026a86de2f640688822f
+                cni.projectcalico.org/podIP: 20.109.131.22/32
+                cni.projectcalico.org/podIPs: 20.109.131.22/32
+  Status:       Running # phase
+
+  Conditions: # coditions
+    Type              Status
+    Initialized       True 
+    Ready             True 
+    ContainersReady   True 
+    PodScheduled      True
+  ```
+- `ReadinessProbe`와 `LivenessProbe`: `ReadinessProbe`는 Pod의 생명주기 중 Pending 상태에서의 동작 및 서비스 요청에 응답이 가능한지 확인하고 LivenessProbe는 Pod의 생명주기 중 Running 상태에서의 동작 컨테이너가 정상 실행 중 인지 확인한다.
+  - ReadinessProbe
+    - Service와 연결된 Pod를 확인하여 ReadinessProbe에 대해 응답이 없거나 실패 응답을 보낸다면 해당 Pod를 사용 불가능한 상태라고 판단하여 서비스 목록에서 제외 -> `애플리케이션이 시작할 준비가 되었는지 체크`하여 애플리케이션 구동 순간에 차이에 따른 트래픽 실패를 없앰
+  - LivenessProbe
+    - 컨테이너의 상태를 주기적으로 체크하여 응답이 없다면 컨테이너를 자동으로 `재시작` -> `애플리케이션이 응답 가능한지 확인`하여 애플리케이션 장애에 대응
+  - ReadinessProbe/LivenessProbe 3가지 방식
+    - httpGet: 가장 많이 사용하는 Probe 방식으로 HTTP GET을 이용하여 컨테이너 상태 체크, 리턴되는 HTTP 응답코드가 200~3xx이라면 정상으로 판단
+
+    - Exec: 쉘 명령으로 수행한 결과에 따라 컨테이너 정상 여부를 체크, 결과값이 0이면 성공 0이 아니면 실패로 간주
+    - tcpSocket: 지정된 포트에 TCP 연결을 시도하여 컨테이너 상태 체크, 연결이 성공되면 컨테이너가 정상인것으로 판단
+  - ReadinessProbe/LivenessProbe 옵션
+    - initialDelaySeconds(default=0):	최초 Probe 전의 지연 시간
+    - periodSeconds(default=10): Probe를 체크하는 시간 간격
+    - timeoutSeconds(default=1): 결과를 대기하는 시간까지의 시간
+    - successThreshold(default=1): ReadinessProbe에서 사용하며 몇번의 성공 결과를 수신해야 성공으로 인정하는지
+    - failureThreshold(default=3): LivenessProbe에서 사용하며 몇번의 실패 결과를 수신해야 실패하고 인정하는지
+  - ReadinessProbe 예시
+    ```yml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: svc-readiness
+    spec:
+      selector:
+        app: readiness
+      ports:
+      - port: 8080
+        targetPort: 8080
+    ```
+    ```yml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: pod-readiness-exec1
+      labels:
+        app: readiness  
+    spec:
+      containers:
+      - name: readiness
+        image: kubetm/app
+        ports:
+        - containerPort: 8080	
+        readinessProbe:
+          exec:
+            command: ["cat", "/readiness/ready.txt"]
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 3
+        volumeMounts:
+        - name: host-path
+          mountPath: /readiness
+      volumes:
+      - name : host-path
+        hostPath:
+          path: /tmp/readiness
+          type: DirectoryOrCreate
+      terminationGracePeriodSeconds: 0
+    ```
+  - LivenessProbe 예시
+    ```yml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: svc-liveness
+    spec:
+      selector:
+        app: liveness
+      ports:
+      - port: 8080
+        targetPort: 8080
+    ```
+    ```yml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: pod-liveness-httpget1
+      labels:
+        app: liveness
+    spec:
+      containers:
+      - name: liveness
+        image: kubetm/app
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+      terminationGracePeriodSeconds: 0
+    ```
+- `QoS classes`: QoS(Quality of Service)는 Pod 생성 시 설정하는 Requests와 limits에 따라 지정되는 `앱의 중요도`에 따라 자원 배정을 관리하게 해주는 설정으로 노드에 있는 Pod가 모든 자원을 사용하고 있을 때 특정 Pod에서 추가 자원이 필요한 경우 중요도에 따라 자원을 배분한다.
+  - QoS classes 종류
+    - `Guaranteed class`: 파드 내의 모든 Container에 Request와 Limit이 설정되어 있고 수치가 같음
+    - `Burstable class`: 파드 내의 Container마다 Request와 Limit은 설정되어 있지만 수치가 같지 않음
+    - `BestEffort class`: 파드 내의 어떤 Container 내에도 Request, Limit이 미설정 
+  - QoS classes와 우선순위
+    - 기본적인 클래스 별 우선순위: `Guarnteed > Burstable > BestEffort`
+    - Burstable 내에서의 우선순위: Request와 실제 사용에 따른 메모리 사용량인 `OOM Score` 낮을수록 우선순위가 높음
+- `Node Scheduling`: Pod를 생성할 경우 생성할 Pod가 어떤 노드에 할당되어야할지 쿠버네티스에서 자동할당 해주는데 운영자가 특정 노드를 지정하고 싶을 때 사용하는 기능이다.
+  - 특정 Node를 선택하는 방법
+    - `NodeSelector`: Node의 Label(Key, Value)을 지정하여 해당 Node에 할당
+    - `NodeAffinity`: NodeSelector를 보완하여 사용하는 기능으로 matchExpressions와 해당 조건에 반드시 부합하는 Node에만 할당하는 `Required`와 Required에 비해 유연한 선택을 하는 `Preferred`의 옵션을 이용하여 복잡/세부적인 조건 구성
+  - 특정 Node에 대해 할당을 제한하는 방법
+    - `Toleration와 Taint`: Taint가 있는 노드에 Toleration으로 조건을 부합하는 경우에만 파드 할당
+  - Node가 아닌 Pod를 기준으로 할당을 집중 분산하는 방법
+    - `Pod Affinity`: 같은 PV 호스트패스를 사용한다면 Master Pod가 최초 할당된 Node에 Slave도 함께 생성
+    - `Anti-Affinity`: Master와 Slave를 서로 다른 Node에 생성
+
+Service
+=======
+- 
+
+Volume
+=======
+
+Ingress
+=======
+
+Autoscaler
+=======
