@@ -237,7 +237,7 @@ Table of Contents
         targetPort: 80 
     type: ClusterIP
   ```
-- `Headless`: CLUSTER-IP가 없는 ClusterIP 타입의 서비스로 IP 없이 도메인으로 연결할 때 스테이트풀셋과 함께 사용
+- `Headless`: CLUSTER-IP가 없는 ClusterIP 타입의 서비스로 IP 없이 도메인으로 연결할 때 주로 사용
   - Headless와 이를 배포하는 Deployment를 이루는 코드
   ```yml
   apiVersion: apps/v1
@@ -268,9 +268,9 @@ Table of Contents
       app: sts
     ports:
       - port: 80
-    clusterIP: None
+    clusterIP: None # headless
   ```
-- `Endpoints`: 서비스는 아니지만 각 서비스에 의해 도달하는 종착 주소로 서비스 생성 시 자동 생성되나 수동 생성도 가능
+- `Endpoints`: 서비스는 아니지만 각 서비스에 의해 도달하는 종착 주소로 서비스 생성 시 자동 생성되나 서비스와 같은 이름으로 수동 생성하여 연결 정보를 매핑하는데 사용
   - 서비스와 직접 만든 앤드포인트를 이루는 코드
   ```yml
   apiVersion: v1
