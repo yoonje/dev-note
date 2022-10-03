@@ -9,8 +9,6 @@ Table of Contents
    - [Controller](#Controller)
    - [Pod](#Pod)
    - [Service](#Service)
-   - [Volume](#Volume)
-   - [StatefulSet](#StatefulSet)
    - [Ingress](#Ingress)
    - [Autoscaler](#Autoscaler)
 <!--te-->
@@ -43,9 +41,10 @@ Kubernetes Basis
   - kubectl: API 서버는 json 또는 protobuf 형식을 이용한 http 통신을 지원하지만 방식을 그대로 쓰면 불편하므로 보통 kubectl이라는 `명령행 도구`를 사용한다.
 
 - Master의 구성 요소
-  - `스케줄러(kube-scheduler)`: 스케줄러는 할당되지 않은 Pod을 여러 가지 조건(필요한 자원, 라벨)에 따라 적절한 노드 서버에 할당해주는 모듈
-  - `큐브 컨트롤러(kube-controller-manager)`: 쿠버네티스에 있는 거의 모든 오브젝트의 상태를 관리하는 모듈
-  - `클라우드 컨트롤러(cloud-controller-manager)`: 클라우드 컨트롤러는 AWS, GCE, Azure 등 클라우드에 특화된 모듈
+  - `스케줄러(kube-scheduler)`: 스케줄러는 할당되지 않은 Pod를 여러 가지 조건(필요한 자원, 라벨)에 따라 적절한 노드 서버에 할당해주는 모듈
+  - `큐브 컨트롤러 매니저(kube-controller-manager)`: 쿠버네티스에 있는 대부분의 오브젝트의 상태를 관리하는 모듈
+  - `큐브 API서버(kube-apiserver)`: 쿠버네티스의 모든 기능들을 REST API로 제공하고 그에 대한 명령을 처리하는 서버
+  - `etcd`: 쿠버네티스의 모든 상태와 데이터를 저장하는 곳
 
 - Node의 구성 요소
   - `큐블릿(kubelet)`: 노드에 할당된 Pod의 생명주기를 관리하고 Pod을 생성하고 Pod 안의 컨테이너에 이상이 없는지 확인하면서 주기적으로 마스터에 상태를 전달하는 모듈
@@ -331,7 +330,7 @@ Basic Object
     - default: 기본 네임스페이스, 쿠버네티스에서 명령을 실행할 때 별도의 네임스페이스를 지정하지 않는다면 항상 defaul 네임스페이스에 명령을 적용
     - kube-system: 쿠버네티스 시스템에서 관리하는 네임스페이스, 이 네임스페이스에는 쿠버네티스 관리용 파드나 설정이 있다.
     - kube-public: 클러스터 안 모든 사용자가 읽을 수 있는 네임스페이스, 보통 클러스터 사용량 같은 정보를 이 네임스페이스에서 관리한다.
-    - ◼︎ kube-node-lease : 각 노드의 임대 오브젝트(Lease Object)들을 관리하는 네임스페이스, 쿠버네티스 1.13 이후 알파 기능으로 추가됨.
+    - kube-node-lease : 각 노드의 임대 오브젝트(Lease Object)들을 관리하는 네임스페이스이다.
   - `ResourceQuota`: `Namespace마다` 제한하는 자원을 명시하는 기능으로 `오브젝트의 숫자` 및 `CPU`와 `Memory` 그리고 `Storage`를 제한한다. 자원을 나타내는 requests와 제한을 나타내는 limits로 구성된다.
   - `LimitRange`: ResourceQuota가 정해진 Namespace 내에서 `파드와 컨테이너마다` 자원의 상한을 설정
   - ResourceQuota 예시
@@ -552,15 +551,14 @@ Pod
     - 컨테이너의 상태를 주기적으로 체크하여 응답이 없다면 컨테이너를 자동으로 `재시작` -> `애플리케이션이 응답 가능한지 확인`하여 애플리케이션 장애에 대응
   - ReadinessProbe/LivenessProbe 3가지 방식
     - httpGet: 가장 많이 사용하는 Probe 방식으로 HTTP GET을 이용하여 컨테이너 상태 체크, 리턴되는 HTTP 응답코드가 200~3xx이라면 정상으로 판단
-
     - Exec: 쉘 명령으로 수행한 결과에 따라 컨테이너 정상 여부를 체크, 결과값이 0이면 성공 0이 아니면 실패로 간주
     - tcpSocket: 지정된 포트에 TCP 연결을 시도하여 컨테이너 상태 체크, 연결이 성공되면 컨테이너가 정상인것으로 판단
   - ReadinessProbe/LivenessProbe 옵션
-    - initialDelaySeconds(default=0):	최초 Probe 전의 지연 시간
-    - periodSeconds(default=10): Probe를 체크하는 시간 간격
-    - timeoutSeconds(default=1): 결과를 대기하는 시간까지의 시간
-    - successThreshold(default=1): ReadinessProbe에서 사용하며 몇번의 성공 결과를 수신해야 성공으로 인정하는지
-    - failureThreshold(default=3): LivenessProbe에서 사용하며 몇번의 실패 결과를 수신해야 실패하고 인정하는지
+    - initialDelaySeconds(default=0):	최초 Probe 전의 지연 시간이다.
+    - periodSeconds(default=10): Probe를 체크하는 시간 간격이다.
+    - timeoutSeconds(default=1): 결과를 대기하는 시간까지의 시간이다.
+    - successThreshold(default=1): ReadinessProbe에서 사용하며 몇번의 성공 결과를 수신해야 성공으로 인정하는지에 대한 값이다.
+    - failureThreshold(default=3): LivenessProbe에서 사용하며 몇번의 실패 결과를 수신해야 실패하고 인정하는지에 대한 값이다.
   - ReadinessProbe 예시
     ```yml
     apiVersion: v1
@@ -653,18 +651,238 @@ Pod
   - 특정 Node에 대해 할당을 제한하는 방법
     - `Toleration와 Taint`: Taint가 있는 노드에 Toleration으로 조건을 부합하는 경우에만 파드 할당
   - Node가 아닌 Pod를 기준으로 할당을 집중 분산하는 방법
-    - `Pod Affinity`: 같은 PV 호스트패스를 사용한다면 Master Pod가 최초 할당된 Node에 Slave도 함께 생성
-    - `Anti-Affinity`: Master와 Slave를 서로 다른 Node에 생성
+    - `Pod Affinity`: 같은 PV 호스트패스를 사용한다면 Master Pod가 최초 할당된 Node에 Slave도 함께 생성한다.
+    - `Anti-Affinity`: Master와 Slave를 서로 다른 Node에 생성한다.
 
 Service
 =======
-- 
-
-Volume
-=======
+- `Headless`: `클러스터 IP가 없는 ClusterIP 타입의 서비스`로 Pod 간의 통신같이 로드밸런싱이 필요없거나 단일 서비스 IP가 필요 없는 경우에 사용한다.
+  - Headless 서비스를 nslookup으로 조회하면 해당 Headless 서비스와 연결된 파드들의 IP를 얻을 수 있다.
+  - 동적으로 변하는 IP에 대하여 대하여 대응이 필요하기 때문에 파드를 Headless 서비스와 연결하기 위해 hostname 속성과 subdomain 속성을 설정하면 nslookup으로 조회할 때 `hostname.subdomain`으로 해당 파드의 IP를 얻을 수 있음
+  - Headless 예시
+    ```yml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: headless1
+    spec:
+      selector:
+        svc: headless
+      ports:
+        - port: 80
+          targetPort: 8080    
+      clusterIP: None
+    ```
+    ```yml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: pod4
+      labels:
+        svc: headless
+    spec:
+      hostname: pod-a # hostname
+      subdomain: headless1 # subdomain
+      containers:
+      - name: container
+        image: kubetm/app
+    ```
+- `Endpoints`: 서비스는 아니지만 각 서비스에 의해 도달하는 종착 주소로 서비스 생성 시 자동 생성되나 서비스와 같은 이름으로 수동 생성하여 연결 정보를 매핑하는데 사용한다.
+  - Endpoints 예시
+    ```yml
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: endpoint2
+    spec:
+      ports:
+      - port: 8080
+    ```
+    ```yml
+    apiVersion: v1
+    kind: Endpoints
+    metadata:
+      name: endpoint2
+    subsets:
+    - addresses:
+      - ip: 20.109.5.12 # endpoint 지정
+      ports:
+      - port: 8080
+    ```
+- `ExternalName`: Endpoint를 사용하여 IP를 지정하면 외부에 있는 도메인의 경우 IP가 바뀔 수 있기 때문에 외부 도메인과 연결할 때 사용하는 서비스이다.
+  - ExternalName 예시
+    ```yml
+    apiVersion: v1
+    kind: Service
+    metadata:
+    name: externalname1
+    spec:
+    type: ExternalName
+    externalName: github.github.io
+    ``` 
 
 Ingress
 =======
+- `Ingress`: 외부에서 쿠버네티스 클러스터 내부로 들어오는 네트워크 요청을 어떻게 처리할지 정의하여 외부에서 쿠버네티스에서 실행 중인 Deployment와 Service에 접근하기 위한 일종의 관문같은 역할을 담당한다. 보통 `Nginx Ingress Controller`를 사용한다.
+  - Ingress 기능
+    - 외부 요청에 대한 로드 밸런싱
+    - TLS/SSL 인증서 처리
+    - 특정 HTTP 경로의 라우팅
+  - Ingress 예시
+    ```yml
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: service-loadbalancing
+    spec:
+      ingressClassName: nginx
+      rules:
+      - http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-shopping
+                port:
+                  number: 8080
+          - path: /customer
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-customer
+                port:
+                  number: 8080
+          - path: /order
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-order
+                port:
+                  number: 8080
+    ```
 
 Autoscaler
 =======
+- `Autoscaler`: 
+  - Autoscaler 종류
+    - HPA(Horizontal Pod Autoscaler): Stateless App에서 오토 스케일링하는 기능으로 요청이 증가하면 파드의 개수를 늘린다. -> `Scale Out`
+    - VPA(Vertical Pod Autoscaler): Statefule App에서 오토 스케일링하는 기능으로 요청이 증가하면 파드의 리소스를 증가시킨다. -> `Scale Up`
+    - CA(Cluster Autoscaler): 클러스터에 노드를 추가한다.
+  - `HPA`
+  - Autoscaler 예시
+    ```yml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+    name: stateless-cpu1
+    spec:
+    selector:
+      matchLabels:
+          resource: cpu
+    replicas: 2
+    template:
+      metadata:
+        labels:
+          resource: cpu
+      spec:
+        containers:
+        - name: container
+          image: kubetm/app:v1
+          resources:
+            requests:
+              cpu: 10m
+            limits:
+              cpu: 20m
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+    name: stateless-svc1
+    spec:
+    selector:
+        resource: cpu
+    ports:
+      - port: 8080
+        targetPort: 8080
+        nodePort: 30001
+    type: NodePort
+    ```
+    ```yml
+    apiVersion: autoscaling/v2beta2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: hpa-resource-cpu
+    spec:
+      maxReplicas: 10
+      minReplicas: 2
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: stateless-cpu1
+      metrics:
+      - type: Resource 
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 50
+    ```
+  - Autoscaler 예시2
+    ```yml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+    name: stateless-memory1
+    spec:
+    selector:
+      matchLabels:
+          resource: memory
+    replicas: 2
+    template:
+      metadata:
+        labels:
+          resource: memory
+      spec:
+        containers:
+        - name: container
+          image: kubetm/app:v1
+          resources:
+            requests:
+              memory: 10Mi
+            limits:
+              memory: 20Mi
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+    name: stateless-svc2
+    spec:
+    selector:
+        resource: memory
+    ports:
+      - port: 8080
+        targetPort: 8080
+        nodePort: 30002
+    type: NodePort
+    ```
+    ```yml
+    apiVersion: autoscaling/v2beta2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: hpa-resource-memory
+    spec:
+      maxReplicas: 10
+      minReplicas: 2
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: stateless-memory1
+      metrics:
+      - type: Resource 
+        resource:
+          name: memory
+          target:
+            type: AverageValue
+            averageValue: 5Mi
+    ```
