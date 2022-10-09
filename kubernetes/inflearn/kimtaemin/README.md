@@ -331,7 +331,7 @@ Basic Object
     - kube-system: 쿠버네티스 시스템에서 관리하는 네임스페이스, 이 네임스페이스에는 쿠버네티스 관리용 파드나 설정이 있다.
     - kube-public: 클러스터 안 모든 사용자가 읽을 수 있는 네임스페이스, 보통 클러스터 사용량 같은 정보를 이 네임스페이스에서 관리한다.
     - kube-node-lease : 각 노드의 임대 오브젝트(Lease Object)들을 관리하는 네임스페이스이다.
-  - `ResourceQuota`: `Namespace마다` 제한하는 자원을 명시하는 기능으로 `오브젝트의 숫자` 및 `CPU`와 `Memory` 그리고 `Storage`를 제한한다. 자원을 나타내는 requests와 제한을 나타내는 limits로 구성된다.
+  - `ResourceQuota`: `Namespace마다` 제한하는 자원을 명시하는 기능으로 `오브젝트의 숫자` 및 `CPU`와 `Memory` 그리고 `Storage`를 제한한다. 최소 자원을 나타내는 requests와 최대 제한을 나타내는 limits로 구성된다.
   - `LimitRange`: ResourceQuota가 정해진 Namespace 내에서 `파드와 컨테이너마다` 자원의 상한을 설정
   - ResourceQuota 예시
     ```yml
