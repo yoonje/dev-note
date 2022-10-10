@@ -18,13 +18,13 @@ Helm
   - 차트 조회 - 허브에서 조회, 로컬 저장소에서 조회
     - `$ helm search hub [keyword]`
     - `$ helm search repo [keyword]`
-  - 차트 생성
-    - `$ helm create [name]`
   - 레포지토리 관리 - 레포지토리 등록, 레포지토리 리스트 조회, 레포지토리 업데이트, 레포지토리 삭제
     - `$ helm repo add [name] [url]` 
     - `$ helm repo list`
     - `$ helm repo update`
     - `$ helm repo remove [name]`
+  - 사용자 정의 차트 생성
+    - `$ helm create [name]`
   - 배포 관리 - 배포, 배포 리스트 조회, 배포 상태 확인, 삭제
     - `$ helm install [name] [chart] [flags]` 
     - `$ helm list`
@@ -249,7 +249,3 @@ Helm Chart
          {{ $key }}: {{ $value | quote }}
       {{- end }}
       ```
-- `오픈소스 Helm Chart 예시`
-  - Tomcat
-  - Prometheus
-  - Grafana
