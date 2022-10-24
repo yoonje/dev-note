@@ -98,14 +98,14 @@
   ex) -XX:SurvivorRatio=6 -> Survivor0:Survivor1:Eden = 1:1:6 로 튜닝
 
 ### log4j2.properties 파일 환경 설정
-`${sys:es.logs.base_path}`: Log 설정 디렉토리
-`${sys:es.logs.cluster_name}`: 클러스터 이름  
-`${sys:es.logs.node_name}`: 노드 이름
-`${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}.log`: 클러스터 운영 로그 설정  
-`${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_deprecation.log`: Elasticsearch에서 수행되고 있는 Deprecated 된 기능 정보  
-`${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_index_search_slowlog.log`: 인덱스 검색 슬로우 로그 정보  
-`${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_index_indexing_slowlog.log`: 인덱스 인덱싱 슬로우 로그 정보  
-`${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_access.log`: X-Pack auditing 로그 정보  
+- `${sys:es.logs.base_path}`: Log 설정 디렉토리
+- `${sys:es.logs.cluster_name}`: 클러스터 이름  
+- `${sys:es.logs.node_name}`: 노드 이름
+- `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}.log`: 클러스터 운영 로그 설정  
+- `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_deprecation.log`: Elasticsearch에서 수행되고 있는 Deprecated 된 기능 정보  
+- `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_index_search_slowlog.log`: 인덱스 검색 슬로우 로그 정보  
+- `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_index_indexing_slowlog.log`: 인덱스 인덱싱 슬로우 로그 정보  
+- `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}_access.log`: X-Pack auditing 로그 정보  
 
 ### ES와 파일 관련 메모리 설정
 * ES는 인덱스를 파일시스템에 쓸 때 mmap을 사용하는데 ES가 열 수 있는 File Descriptor가 부족하면 데이터 손실이 날 수 있어 스왑 메모리를 활용하여 많은 파일 디스크립터가 수용될 수 있도록 설정
