@@ -1,16 +1,59 @@
 # 자바 8
-인프런 더 자바 자바8 정리
+인프런 더 자바 자바8 및 제네릭 문법 정리
 
 Table of contents
 =================
 <!--ts-->
+   * [제네릭](#제네릭)
    * [함수형 인터페이스와 람다 표현식 소개](#함수형-인터페이스와-람다-표현식-소개)
    * [인터페이스의 변화](#인터페이스의-변화)
    * [Stream](#Stream)
    * [Optional](#Optional)
    * [Date와 Time](#Date와-Time)
-   * [CompletableFuture](#CompletableFuture)
 <!--te-->
+
+제네릭
+=======
+- 제네릭
+  - 제네릭은 클래스, 메소드에서 사용할 데이터 타입을  클래스나 메소드를 선언할 때가 아닌 사용할 때, 즉 인스턴스를 생성할 때나 메소드를 호출할 때 정하는 기법
+  - Object를 사용하여 다양한 타입을 다루게 되면 코드 중복은 막을 수 있겠지만 객체의 타입을 컴파일 타임에 체크할 수 없어 타입 안정성이 없으며 불필요한 형변환이 발생
+- 제네릭 클래스: `클래스 명 우측에` 타입 매매변수를 선언하여 클래스의 제네릭 타입을 전역 변수처럼 사용
+```java
+public class GenericsStack<E> {
+  
+  private List<E> taskList;
+  
+  public GenericsStack() {
+    taskList = new ArrayList<>();
+  }
+
+  public boolean push(E tasj) {
+    return taskList.add(task);
+  }
+
+  public E pop() {
+    if (taskList.isEmpty()) {
+      return null;
+    }
+
+    return taskList.remove(taskList.size - 1);
+  }
+
+}
+```
+- 제네릭 메소드: `메서드의 반환 값 앞에` 타입 매개변수를 지정하여 메소드의 제네릭 타입을 해당 메소드 안에서만 사용
+```java
+public class GenericStakUtil {
+
+  public static <T> GenericStack<T> as(List<T> list) {
+
+    GenericsStack<T> stack = new GenericsStack<>();
+    list.forech(stack::push);
+    return stack;
+    
+  }
+}
+``` 
 
 함수형 인터페이스와 람다 표현식 소개
 =======
