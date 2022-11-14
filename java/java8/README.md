@@ -523,7 +523,7 @@ Optional
               .filter(oc -> oc.getTitle().startsWith("spring"))
               .findFirst();
   
-  Onlineclass onlineClasses = optional.orElseGet(App::createNweClass);
+  Onlineclass onlineClasses = optional.orElseGet(App::createNewClass);
   ```
   - Optional에 값이 있으면 가져오고 없는 경우 에러를 던지기: orElseThrow()
   ```java
