@@ -17,7 +17,7 @@ Table of contents
 - 제네릭
   - 제네릭은 클래스, 메소드에서 사용할 데이터 타입을  클래스나 메소드를 선언할 때가 아닌 사용할 때, 즉 인스턴스를 생성할 때나 메소드를 호출할 때 정하는 기법
   - Object를 사용하여 다양한 타입을 다루게 되면 코드 중복은 막을 수 있겠지만 객체의 타입을 컴파일 타임에 체크할 수 없어 타입 안정성이 없으며 불필요한 형변환이 발생
-- 제네릭 클래스: `클래스 명 우측에` 타입 매매변수를 선언하여 클래스의 제네릭 타입을 전역 변수처럼 사용
+- 제네릭 클래스: `클래스 명 우측에` 타입 매개변수를 선언하여 클래스의 제네릭 타입을 전역 변수처럼 사용
 ```java
 public class GenericsStack<E> {
   
@@ -477,10 +477,10 @@ Optional
   - null을 처리하는 방법
     - 예외를 던짐 -> 스택트레이스 때문에 비용이 비쌈
     - null을 리턴 -> 클리어인트 코드에 주의가 매우 많이 필요함
-    - Optional을 리턴 -> 클라이언트에 코드에게 명시적으로 빈 값일 수도 있다는 걸 알려주고, 빈 값인 경우에 대한 처리를 강제하여 안전함
+    - `Optional을 리턴` -> 클라이언트에 코드에게 명시적으로 빈 값일 수도 있다는 걸 알려주고, 빈 값인 경우에 대한 처리를 강제하여 안전함
   - `리턴 값으로만` 쓰기를 권장
-  - 프리미티브 타입 용 Optional을 따로 존재(OptionalInt, OptionalLong, OptionalDouble)
-  - Collection, Map, Stream Array, Optional 같은 컨테이너 성격의 인스턴스들은 그 자체로 null체크가 가능하므로 Opiontal로 감싸지 말 것
+  - 프리미티브 타입 용 Optional은 따로 존재(OptionalInt, OptionalLong, OptionalDouble)하며 사용을 권장하지 않음
+  - Collection, Map, Stream Array, Optional 같은 컨테이너 성격의 인스턴스들은 그 자체로 null 체크가 가능하므로 Opiontal로 감싸지 말 것
   ```java
   Optional<Progress> progress = onlineClass.getProgress();
   progress.ifPresent(p -> System.out.println(p.getId));
@@ -488,10 +488,26 @@ Optional
 
 - 옵셔널 API
   - Optional 만들기
-    - Optional.of(): 반드시 값이 있어야 하는 경우애 Optional 객체를 만들 때 사용
-    - Optional.ofNullable(): 값이 null 일수도 있는 경우에 Optional 객체를 만들 때 사용
-    - Optional.empty(): 비어있는 Optional 객체를 만들 때 사용
-  - Optional에 값이 있는지 없는지 확인하기: isPresent(), isEmpty()
+    - `Optional.of()`: 반드시 값이 있어야 하는 Optional 객체를 만들 때 사용
+    - `Optional.ofNullable()`: 값이 null 일 수도 있는 Optional 객체를 만들 때 사용
+    - `Optional.empty()`: 값이 없는 Optional 객체를 만들 때 사용
+  - Optional에 있는 값 가져오기: optional.get()
+  ```java
+  Optional<OnlineClass> optional = springClasses.stream()
+              .filter(oc -> oc.getTitle().startsWith("spring"))
+              .findFirst();
+
+  Onlineclass onlineClasses = optional.get(); // 값이 없을 경우 NoSuchElmentException 발생
+  ```
+  - Optional에 값이 있는지 없는지 확인하기: optional.isPresent()
+  ```java
+  Optional<OnlineClass> optional = springClasses.stream()
+              .filter(oc -> oc.getTitle().startsWith("spring"))
+              .findFirst();
+  
+  System.out.println(optional.isPresent());
+  ```
+  - Optional에 값이 있는 경우 ~~를 하라: optional.ifPresent(Consumer)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
@@ -499,17 +515,7 @@ Optional
   
   optional.ifPresent(oc -> System.out.println(oc.getTitle()));
   ```
-  - Optional에 있는 값 가져오기: get()
-  ```java
-  Optional<OnlineClass> optional = springClasses.stream()
-              .filter(oc -> oc.getTitle().startsWith("spring"))
-              .findFirst();
-
-  // 값이 없을 경우 NoSuchElementException이 발생
-  Onlineclass onlineClasses = optional.get();
-  ```
-  - Optional에 값이 있는 경우 ~~를 하라: ifPresent(Consumer)
-  - Optional에 값이 있으면 가져오고 없는 경우에 특정 값 리턴하기:orElse(T)
+  - Optional에 값이 있으면 가져오고 없는 경우에 특정 값 리턴하기: optional.orElse(T)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
@@ -517,7 +523,7 @@ Optional
   
   Onlineclass onlineClasses = optional.orElse(createNewClass());
   ```
-  - Optional에 값이 있으면 가져오고 없는 경우에 ~~를 하라: orElseGet(Supplier)
+  - Optional에 값이 있으면 가져오고 없는 경우에 ~~를 하라: optional.orElseGet(Supplier)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
@@ -525,17 +531,17 @@ Optional
   
   Onlineclass onlineClasses = optional.orElseGet(App::createNewClass);
   ```
-  - Optional에 값이 있으면 가져오고 없는 경우 에러를 던지기: orElseThrow()
+  - Optional에 값이 있으면 가져오고 없는 경우 에러를 던지기: optional.orElseThrow(Function)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
               .findFirst();
   
-  Onlineclass onlineClasses = optional.orElseThrow(() ->{
+  Onlineclass onlineClasses = optional.orElseThrow(() -> {
     return new IllegalArgumentException();
   });
   ```
-  - Optional에 들어있는 값 걸러내기: Optional filter(Predicate)
+  - Optional에 들어있는 값 걸러내기: optional.filter(Predicate)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
@@ -543,7 +549,7 @@ Optional
   
   Optional<Onlineclass> onlineClasses = optional.filter(oc -> !oc.isClosed());
   ```
-  - Optional에 들어있는 값 변환하기: Optional map(Function), Optional flatMap(Function)
+  - Optional에 들어있는 값 변환하기: optional.map(Function), optional.flatMap(Function)
   ```java
   Optional<OnlineClass> optional = springClasses.stream()
               .filter(oc -> oc.getTitle().startsWith("spring"))
