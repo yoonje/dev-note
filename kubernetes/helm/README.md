@@ -25,11 +25,13 @@ Helm
     - `$ helm repo remove [name]`
   - 사용자 정의 차트 생성
     - `$ helm create [name]`
-  - 배포 관리 - 배포, 배포 리스트 조회, 배포 상태 확인, 삭제
-    - `$ helm install [name] [chart] [flags]` 
+  - 배포 관리 - 확인, 배포, 배포 리스트 조회, 배포 상태 확인, 업그레이드, 삭제
+    - `$ helm template [chart]` 
+    - `$ helm install [name] [chart]` 
     - `$ helm list`
     - `$ helm status [name]` 
-    - `$ helm uninstall [name]` 
+    - `$ helm upgrade [name] [chart]` 
+    - `$ helm uninstall [name]` or `$ helm delete [name]`
   - 차트 조회 - 차트에 대한 모든 정보, 차트 정의 정보, 차트의 README 파일 정보, 차트의 values.yaml 파일 정보
     - `$ helm show all [CHART] [flags]`
     - `$ helm show chart [CHART] [flags]`
