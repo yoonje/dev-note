@@ -44,10 +44,13 @@ Helm
 Helm Chart
 =======
 - `Helm Chart 만들기`
-  - 기본 구조: `$ helm create <chart-name>` 실행 시에 template, test, values.yaml, Chart.yaml, README.md 등 파일들이 chart-name 디렉토리에 생성
+  - 기본 구조: `$ helm create <chart-name>` 실행 시에 `template.`, `values.yaml`, `Chart.yaml`, README.md 등 파일들이 chart-name 디렉토리에 생성
     - 내장 객체
-      - Values: values.yaml 파일 및 사용자 제공 파일에서 템플릿으로 전달된 값
-      - Chart: Chart.yaml 파일의 내용
+      - Values: values.yaml 파일 및 사용자 정의 파일에서 템플릿으로 전달될 값
+      - Chart: Chart.yaml 파일의 내용으로 chart의 전반적인 정보
+      - Template: 실행 중인 현재 템플릿에 대한 정보로 쿠버네티스 리소스
+        - Name: 현재 템플릿에 대한 네임스페이스 파일 경로 (예: mychart/templates/mytemplate.yaml)
+        - BasePath: 현재 차트의 템플릿 디렉토리에 대한 네임스페이스 경로 (예: mychart/templates)
       - Relesase: 릴리스 자체
         - Release.Name: 릴리스 이름
         - Release.Namespace: 릴리스될 네임스페이스 (manifest에서 오버라이드하지 않은 경우)
@@ -55,9 +58,6 @@ Helm Chart
         - Release.IsInstall: 현재 작업이 설치일 경우 true 로 설정
         - Release.Revision: 이 릴리스의 리비전 번호로 설치 시에는 이 값이 1이며 업그레이드나 롤백을 수행할 때마다 증가
         - Release.Service: 현재 템플릿을 렌더링하는 서비스로 Helm 에서는 항상 Helm
-      - Template:  실행 중인 현재 템플릿에 대한 정보
-        - Name: 현재 템플릿에 대한 네임스페이스 파일 경로 (예: mychart/templates/mytemplate.yaml)
-        - BasePath: 현재 차트의 템플릿 디렉토리에 대한 네임스페이스 경로 (예: mychart/templates)
     - 변수 주입: `{{ }}` 는 변수를 의미하고 `.(dot)`은 전체 스콥을 의미
       ```yml
       # values.yaml
