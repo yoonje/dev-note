@@ -46,7 +46,12 @@ Helm
 Helm Chart
 =======
 - `Helm Chart 만들기`
-  - 기본 구조: `$ helm create <chart-name>` 실행 시에 `template.`, `values.yaml`, `Chart.yaml`, README.md 등 파일들이 chart-name 디렉토리에 생성
+  - 기본 구조: `$ helm create <chart-name>` 실행 시에 `template.`, `values.yaml`, `Chart.yaml`, `_helpers.tpl`, README.md 등 파일들이 chart-name 디렉토리에 생성
+    - 파일 별 역할
+      - Chart.yaml: Chart에 대한 이름, 버전 등의 전반적인 정보가 정의된 파일
+      - values.yaml: Chart 설치 시 사용할 변수를 정의한 파일
+      - template/: 설치할 쿠버네티스 리소스들의 기본 틀을 정의한 manifest 파일
+      - template/_helpers.tpl: manifest 파일들에서 공유하는 변수를 정의하는 파일
     - 내장 객체
       - Values: values.yaml 파일 및 사용자 정의 파일에서 템플릿으로 전달될 값
       - Chart: Chart.yaml 파일의 내용으로 chart의 전반적인 정보
@@ -60,6 +65,11 @@ Helm Chart
         - Release.IsInstall: 현재 작업이 설치일 경우 true 로 설정
         - Release.Revision: 이 릴리스의 리비전 번호로 설치 시에는 이 값이 1이며 업그레이드나 롤백을 수행할 때마다 증가
         - Release.Service: 현재 템플릿을 렌더링하는 서비스로 Helm 에서는 항상 Helm
+    - helm template 문법
+      - .Values: values.yaml 파일에서 정의된 변수
+      - .Charts: charts.yaml 파일에서 정의된 변수
+      - .Release: 배포할 때 할당되는 릴리스 정보들 사용
+      - include: _helpers.tpl 파일에 정의된 변수
     - 변수 주입: `{{ }}` 는 변수를 의미하고 `.(dot)`은 전체 스콥을 의미
       ```yml
       # values.yaml
