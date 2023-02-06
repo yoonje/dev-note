@@ -7,5 +7,4 @@
 |------|-------|
 |effective-java|11장 12장 보충 필요|
 |clean-code|13장 14장 15장 16장 보충 필요|
-|java/test|테스트 코드 작성 이외 다른 테스트 내용 정리 필요|
 |java-design-patterns/java-object-oriented-design-pattern|구체적인 디자인 패턴 내용 정리 필요|
