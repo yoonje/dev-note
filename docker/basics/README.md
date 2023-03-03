@@ -99,7 +99,7 @@ Run
   ```sh
   $ docker run --rm -it ubuntu:20.04 /bin/sh
   ```
-* CetOS 컨테이너 실행하기
+* CentOS 컨테이너 실행하기
   * 볼륨 마운트하여 컨테이너 실행하기
   ```sh
   $ docker run -it -v /Users/user/data:/data centos /bin/bash
