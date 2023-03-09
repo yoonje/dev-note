@@ -338,7 +338,6 @@ Making Image
   ``` 
   * ENTRYPOINT: 컨테이너 기본 실행 명령어
   * USER: RUN, CMD, ENTRYPOINT를 실행하는 사용자
-  * WORKDIR: 작업 디렉토리 설정
   * ARGS: 빌드타임 환경변수 설정
   * LABEL: key - value 데이터
   * ONBUILD: 다른 빌드의 베이스로 사용될때 사용하는 명령어
