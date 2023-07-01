@@ -355,6 +355,11 @@ Stream
   - collect, allMatch, count, forEach, min, max, findFirst, findAny, ...
 
 - 스트림 API
+  - 생성하기: generate(Supplier), Iterate(T seed, UnaryOperator), of() / 컬렉션인 경우 `stream()`
+  ```java
+  Stream<String> stream = Stream.of("code", "chacha", "blog", "example");
+  stream.forEach(s -> System.out.println(s));
+  ```
   - 걸러내기: `Filter(Predicate)`
   ```java
   List<OnlineClass> springClasses = new ArrayList<>();
@@ -381,12 +386,6 @@ Stream
   springClasses.stream()
           .map(oc -> oc.getTitle())
           .forEach(System.out::println);
-  ```
-  
-  - 생성하기: generate(Supplier), Iterate(T seed, UnaryOperator), of() / 컬렉션인 경우 `stream()`
-  ```java
-  Stream<String> stream = Stream.of("code", "chacha", "blog", "example");
-  stream.forEach(s -> System.out.println(s));
   ```
   
   - 제한하기: limit(long) 또는 skip(long)
@@ -478,9 +477,9 @@ Optional
     - 예외를 던짐 -> 스택트레이스 때문에 비용이 비쌈
     - null을 리턴 -> 클리어인트 코드에 주의가 매우 많이 필요함
     - `Optional을 리턴` -> 클라이언트에 코드에게 명시적으로 빈 값일 수도 있다는 걸 알려주고, 빈 값인 경우에 대한 처리를 강제하여 안전함
-  - `리턴 값으로만` 쓰기를 권장
+  - `반환 타입(리턴 값)으로만` 쓰기를 권장
   - 프리미티브 타입 용 Optional은 따로 존재(OptionalInt, OptionalLong, OptionalDouble)하며 사용을 권장하지 않음
-  - Collection, Map, Stream Array, Optional 같은 컨테이너 성격의 인스턴스들은 그 자체로 null 체크가 가능하므로 Opiontal로 감싸지 말 것
+  - Collection, Map, Stream Array, Optional 같은 컨테이너 성격의 인스턴스들은 그 자체로 null을 감쌀 수 있으므로 Optional로 감싸지 말고 일반 인스턴스를 Optional로 감싸서 사용
   ```java
   Optional<Progress> progress = onlineClass.getProgress();
   progress.ifPresent(p -> System.out.println(p.getId));
